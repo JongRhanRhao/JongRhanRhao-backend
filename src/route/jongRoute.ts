@@ -57,3 +57,10 @@ router.delete("/stores/:id", deleteStore);
 router.get("/tables", getAllTables);
 router.get("/tables/:id", getTableById);
 router.post("/tables", createTable)
+
+// Routes
+router.get("/reservations", getAllReservations);
+router.get("/reservations/:id", getReservationById);
+router.post("/reservations", createReservation);
+router.put("/reservations/:id", updateReservation);
+router.delete("/reservations/:id", deleteReservation);

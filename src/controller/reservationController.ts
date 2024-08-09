@@ -1,45 +1,67 @@
-// controllers/reservationController.ts
-
 import { Request, Response } from "express";
-import { Reservation } from "../models/reservation";
+import pool from "../dbConfig/dbConfig";
 
-let reservations: Reservation[] = [];
-
-// Get all reservations
-export const getAllReservations = (req: Request, res: Response) => {
-  res.json(reservations);
-};
-
-// Get a reservation by ID
-export const getReservationById = (req: Request, res: Response) => {
-  const reservation = reservations.find(r => r.reservationId === parseInt(req.params.id));
-  if (reservation) {
-    res.json(reservation);
-  } else {
-    res.status(404).send("Reservation not found");
+export const getAllReservations = async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query('SELECT * FROM reservations');
+    res.status(200).json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Create a new reservation
-export const createReservation = (req: Request, res: Response) => {
-  const newReservation: Reservation = req.body;
-  reservations.push(newReservation);
-  res.status(201).json(newReservation);
-};
-
-// Update a reservation
-export const updateReservation = (req: Request, res: Response) => {
-  const reservationIndex = reservations.findIndex(r => r.reservationId === parseInt(req.params.id));
-  if (reservationIndex !== -1) {
-    reservations[reservationIndex] = req.body;
-    res.json(reservations[reservationIndex]);
-  } else {
-    res.status(404).send("Reservation not found");
+export const getReservationById = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  try {
+    const result = await pool.query('SELECT * FROM reservations WHERE reservation_id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Reservation not found' });
+    }
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Delete a reservation
-export const deleteReservation = (req: Request, res: Response) => {
-  reservations = reservations.filter(r => r.reservationId !== parseInt(req.params.id));
-  res.status(204).send();
+export const createReservation = async (req: Request, res: Response) => {
+  const { tableId, numberOfTable, customerId, reservationTime, numberOfPeople, customerName, customerPhone } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO reservations (table_id, number_of_table, customer_id, reservation_time, number_of_people, customer_name, customer_phone) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [tableId, numberOfTable, customerId, reservationTime, numberOfPeople, customerName, customerPhone]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const updateReservation = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  const { tableId, numberOfTable, customerId, reservationTime, numberOfPeople, customerName, customerPhone } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE reservations SET table_id = $1, number_of_table = $2, customer_id = $3, reservation_time = $4, number_of_people = $5, customer_name = $6, customer_phone = $7 WHERE reservation_id = $8 RETURNING *',
+      [tableId, numberOfTable, customerId, reservationTime, numberOfPeople, customerName, customerPhone, id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Reservation not found' });
+    }
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const deleteReservation = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  try {
+    const result = await pool.query('DELETE FROM reservations WHERE reservation_id = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Reservation not found' });
+    }
+    res.status(204).json({});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
