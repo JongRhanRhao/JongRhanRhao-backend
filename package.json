@@ -6,7 +6,6 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "type": "commonjs",
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
@@ -14,61 +13,33 @@
     "db:prototype": "ts-node ./db/prototype.ts",
     "dev": "nodemon",
     "build": "tsc && tsc-alias",
-    "start": "ts-node src/index.ts",
-    "test:api": "ts-node -r tsconfig-paths/register src/apiTesting"
+    "start": "node ./dist/src/index.js"
   },
   "dependencies": {
-    "@faker-js/faker": "^8.4.1",
-    "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^22.1.0",
-    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.32.1",
-    "error": "^10.4.0",
     "express": "^4.19.2",
-    "express-validator": "^7.1.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "nanoid": "^5.0.7",
+    "pg": "^8.12.0",
     "pg": "^8.12.0",
     "postgres": "^3.4.4",
-    "sql": "^0.78.0",
-    "tsk": "^0.3.2",
-    "tsx": "^4.17.0"
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/pg": "^8.11.6",
-    "@types/uuid": "^10.0.0",
     "drizzle-kit": "^0.23.1",
     "nodemon": "^3.1.4",
-    "ts-node": "^10.9.2",
-    "tsc-alias": "^1.8.10",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.5.4"
-  },
-  "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "node",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true
-  },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+    "tsc-alias": "^1.8.10"
+  }
 }

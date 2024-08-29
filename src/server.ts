@@ -4,8 +4,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes";
-import { dbClient, dbConn } from "../db/client";
-import { users, stores, tables, favorites, reservations } from "../db/schema";
 
 dotenv.config();
 
@@ -16,7 +14,6 @@ const corsOptions = {
   origin: "http:localhost:5173",
 };
 app.use(cors(corsOptions));
-
 
 app.use("/api/auth", authRoutes);
 //POST: localhost:3000/api/auth/register {name, email, password, role}

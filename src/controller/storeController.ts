@@ -1,72 +1,45 @@
+// controllers/storeController.ts
+
 import { Request, Response } from "express";
-import pool from "../dbConfig/db";
+import { Stores } from "../models/stores";
+
+let stores: Stores[] = [];
 
 // Get all stores
-export const getAllStores = async (req: Request, res: Response) => {
-  try {
-    const result = await pool.query('SELECT * FROM stores');
-    res.status(200).json(result.rows);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
+export const getAllStores = (req: Request, res: Response) => {
+  res.json(stores);
 };
 
 // Get a store by ID
-export const getStoreById = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  try {
-    const result = await pool.query('SELECT * FROM stores WHERE store_id = $1', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Store not found' });
-    }
-    res.status(200).json(result.rows[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+export const getStoreById = (req: Request, res: Response) => {
+  const store = stores.find(s => s.storeId === parseInt(req.params.id));
+  if (store) {
+    res.json(store);
+  } else {
+    res.status(404).send("Store not found");
   }
 };
 
 // Create a new store
-export const createStore = async (req: Request, res: Response) => {
-  const { name, location } = req.body;
-  try {
-    const result = await pool.query(
-      'INSERT INTO stores (name, location) VALUES ($1, $2) RETURNING *',
-      [name, location]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
+export const createStore = (req: Request, res: Response) => {
+  const newStore: Stores = req.body;
+  stores.push(newStore);
+  res.status(201).json(newStore);
 };
 
 // Update a store
-export const updateStore = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  const { name, location } = req.body;
-  try {
-    const result = await pool.query(
-      'UPDATE stores SET name = $1, location = $2 WHERE store_id = $3 RETURNING *',
-      [name, location, id]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Store not found' });
-    }
-    res.status(200).json(result.rows[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+export const updateStore = (req: Request, res: Response) => {
+  const storeIndex = stores.findIndex(s => s.storeId === parseInt(req.params.id));
+  if (storeIndex !== -1) {
+    stores[storeIndex] = req.body;
+    res.json(stores[storeIndex]);
+  } else {
+    res.status(404).send("Store not found");
   }
 };
 
 // Delete a store
-export const deleteStore = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  try {
-    const result = await pool.query('DELETE FROM stores WHERE store_id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Store not found' });
-    }
-    res.status(204).send();
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
+export const deleteStore = (req: Request, res: Response) => {
+  stores = stores.filter(s => s.storeId !== parseInt(req.params.id));
+  res.status(204).send();
 };
