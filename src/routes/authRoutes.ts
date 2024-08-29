@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import pool from "../dbConfig/db";
 import dotenv from "dotenv";
 import { body, validationResult } from "express-validator";
+import { users } from "@db/schema";
 
 dotenv.config();
 
@@ -72,6 +73,7 @@ router.post("/register", validateUserInput, async (req: Request, res: Response) 
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
+  console.log("key", process.env.JWT_SECRET);
 });
 
 // Login route

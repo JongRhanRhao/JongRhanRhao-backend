@@ -8,6 +8,7 @@ import { exists } from "drizzle-orm";
 import { body, validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import { customAlphabet } from "nanoid";
+import { v4 as uuidv4 } from 'uuid';
 
 
 // Get all users
@@ -36,9 +37,6 @@ export const getUserById = async (req: Request, res: Response) => {
 
 // Create a new user
 
-// Configure nanoid to ensure unique values
-const nanoid = customAlphabet('1234567890abcdef', 21);
-
 export const createUser = async (req: Request, res: Response) => {
   // 1. Input validation
   await Promise.all([
@@ -66,12 +64,15 @@ export const createUser = async (req: Request, res: Response) => {
     const saltRounds = 10; // Adjust as needed for security
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // 4. Insert new user
+    // 4. Generate a unique user ID using uuidv4
+    const userId = uuidv4();
+
+    // 5. Insert new user into the database
     const result = await pool.query(
-      `INSERT INTO users (name, email, password, role) 
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO users (user_id, name, email, password, role) 
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [name, email, hashedPassword, role]
+      [userId, name, email, hashedPassword, role]
     );
 
     if (result.rowCount === 0) {
@@ -79,11 +80,11 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(409).json({ error: 'Failed to create user' });
     }
 
-    // 5. Respond with the newly created user (excluding sensitive data like password)
+    // 6. Respond with the newly created user (excluding sensitive data like password)
     const newUser = result.rows[0];
     delete newUser.password; // Don't send the hashed password back
     res.status(201).json(newUser);
-  } catch (error : any) {
+  } catch (error: any) {
     console.error('Error creating user:', error.message);
     res.status(500).json({ error: `An error occurred while creating the user: ${error.message}` });
   }
