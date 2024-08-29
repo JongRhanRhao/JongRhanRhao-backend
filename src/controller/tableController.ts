@@ -1,72 +1,45 @@
+// controllers/tableController.ts
+
 import { Request, Response } from "express";
-import pool from "../dbConfig/db";
+import { Tables } from "../models/tables";
+
+let tables: Tables[] = [];
 
 // Get all tables
-export const getAllTables = async (req: Request, res: Response) => {
-  try {
-    const result = await pool.query('SELECT * FROM tables');
-    res.status(200).json(result.rows);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
+export const getAllTables = (req: Request, res: Response) => {
+  res.json(tables);
 };
 
 // Get a table by ID
-export const getTableById = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  try {
-    const result = await pool.query('SELECT * FROM tables WHERE table_id = $1', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Table not found' });
-    }
-    res.status(200).json(result.rows[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+export const getTableById = (req: Request, res: Response) => {
+  const table = tables.find(t => t.tableId === parseInt(req.params.id));
+  if (table) {
+    res.json(table);
+  } else {
+    res.status(404).send("Table not found");
   }
 };
 
 // Create a new table
-export const createTable = async (req: Request, res: Response) => {
-  const { name, capacity } = req.body;
-  try {
-    const result = await pool.query(
-      'INSERT INTO tables (name, capacity) VALUES ($1, $2) RETURNING *',
-      [name, capacity]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
+export const createTable = (req: Request, res: Response) => {
+  const newTable: Tables = req.body;
+  tables.push(newTable);
+  res.status(201).json(newTable);
 };
 
 // Update a table
-export const updateTable = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  const { name, capacity } = req.body;
-  try {
-    const result = await pool.query(
-      'UPDATE tables SET name = $1, capacity = $2 WHERE table_id = $3 RETURNING *',
-      [name, capacity, id]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Table not found' });
-    }
-    res.status(200).json(result.rows[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+export const updateTable = (req: Request, res: Response) => {
+  const tableIndex = tables.findIndex(t => t.tableId === parseInt(req.params.id));
+  if (tableIndex !== -1) {
+    tables[tableIndex] = req.body;
+    res.json(tables[tableIndex]);
+  } else {
+    res.status(404).send("Table not found");
   }
 };
 
 // Delete a table
-export const deleteTable = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  try {
-    const result = await pool.query('DELETE FROM tables WHERE table_id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Table not found' });
-    }
-    res.status(204).send();
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
+export const deleteTable = (req: Request, res: Response) => {
+  tables = tables.filter(t => t.tableId !== parseInt(req.params.id));
+  res.status(204).send();
 };

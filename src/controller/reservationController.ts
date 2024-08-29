@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import pool from "../dbConfig/db";
+import pool from "../dbConfig/dbConfig";
 
 export const getAllReservations = async (req: Request, res: Response) => {
   try {
     const result = await pool.query('SELECT * FROM reservations');
     res.status(200).json(result.rows);
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
@@ -18,13 +18,12 @@ export const getReservationById = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Reservation not found' });
     }
     res.status(200).json(result.rows[0]);
-  } catch (err: unknown) {
-    res.status(500).json({ error: (err as Error).message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
 export const createReservation = async (req: Request, res: Response) => {
-  console.log("Creating reservation:", req.body);
   const { tableId, numberOfTable, customerId, reservationTime, numberOfPeople, customerName, customerPhone } = req.body;
   try {
     const result = await pool.query(
@@ -32,7 +31,7 @@ export const createReservation = async (req: Request, res: Response) => {
       [tableId, numberOfTable, customerId, reservationTime, numberOfPeople, customerName, customerPhone]
     );
     res.status(201).json(result.rows[0]);
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
@@ -49,7 +48,7 @@ export const updateReservation = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Reservation not found' });
     }
     res.status(200).json(result.rows[0]);
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
@@ -62,7 +61,7 @@ export const deleteReservation = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Reservation not found' });
     }
     res.status(204).json({});
-  } catch (err: any) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
