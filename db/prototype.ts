@@ -111,7 +111,7 @@ async function updateData() {
       .set({
         name: "Jane Doe",
       })
-      .where(eq(users.userId, userId));
+      .where(eq(users.userId, String(userId)));
   }
 
   // Update a store
@@ -123,7 +123,7 @@ async function updateData() {
       .set({
         name: "Updated Store",
       })
-      .where(eq(stores.storeId, storeId));
+      .where(eq(stores.storeId, String(storeId)));
   }
 
   // Update a table
@@ -135,7 +135,7 @@ async function updateData() {
       .set({
         status: "occupied",
       })
-      .where(eq(tables.tableId, tableId));
+      .where(eq(tables.tableId, String(tableId)));
   }
 
   // Update a favorite
@@ -145,9 +145,9 @@ async function updateData() {
     await dbClient
       .update(favorites)
       .set({
-        customerId: 2,
+        customerId: "2",
       })
-      .where(eq(favorites.favoriteId, favoriteId));
+      .where(eq(favorites.favoriteId, String(favoriteId)));
   }
 
   // Update a reservation
@@ -159,7 +159,7 @@ async function updateData() {
       .set({
         numberOfPeople: 4,
       })
-      .where(eq(reservations.reservationId, reservationId));
+      .where(eq(reservations.reservationId, String(reservationId)));
   }
 
   dbConn.end();
@@ -171,21 +171,21 @@ async function deleteData() {
   const userResults = await dbClient.query.users.findMany();
   if (userResults.length > 0) {
     const userId = userResults[0].userId;
-    await dbClient.delete(users).where(eq(users.userId, userId));
+    await dbClient.delete(users).where(eq(users.userId, String(userId)));
   }
 
   // Delete a store
   const storeResults = await dbClient.query.stores.findMany();
   if (storeResults.length > 0) {
     const storeId = storeResults[0].storeId;
-    await dbClient.delete(stores).where(eq(stores.storeId, storeId));
+    await dbClient.delete(stores).where(eq(stores.storeId, String(storeId)));
   }
 
   // Delete a table
   const tableResults = await dbClient.query.tables.findMany();
   if (tableResults.length > 0) {
     const tableId = tableResults[0].tableId;
-    await dbClient.delete(tables).where(eq(tables.tableId, tableId));
+    await dbClient.delete(tables).where(eq(tables.tableId, String(tableId)));
   }
 
   // Delete a favorite
@@ -194,7 +194,7 @@ async function deleteData() {
     const favoriteId = favoriteResults[0].favoriteId;
     await dbClient
       .delete(favorites)
-      .where(eq(favorites.favoriteId, favoriteId));
+      .where(eq(favorites.favoriteId, String(favoriteId)));
   }
 
   // Delete a reservation
@@ -203,7 +203,7 @@ async function deleteData() {
     const reservationId = reservationResults[0].reservationId;
     await dbClient
       .delete(reservations)
-      .where(eq(reservations.reservationId, reservationId));
+      .where(eq(reservations.reservationId, String(reservationId)));
   }
 
   dbConn.end();
