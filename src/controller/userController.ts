@@ -1,26 +1,33 @@
-// controllers/userController.ts
-
 import { Request, Response } from "express";
-import { User } from "../models/users";
 import pool from "../db";
-import jwt from "jsonwebtoken"; // Import the 'jsonwebtoken' library
+import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-// Example in-memory data store
-let users: User[] = [];
-
 // Get all users
-export const getAllUsers = (req: Request, res: Response) => {
-  res.json(users);
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT * FROM users");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ error: (err as Error).message });
+  }
 };
 
 // Get a user by ID
-export const getUserById = (req: Request, res: Response) => {
-  const user = users.find(u => u.userId === parseInt(req.params.id));
-  if (user) {
-    res.json(user);
-  } else {
-    res.status(404).send("User not found");
+export const getUserById = async (req: Request, res: Response) => {
+  const userId = req.params.id;
+
+  try {
+    const result = await pool.query("SELECT * FROM users WHERE user_id = $1", [userId]);
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
@@ -65,20 +72,47 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-
 // Update a user
-export const updateUser = (req: Request, res: Response) => {
-  const userIndex = users.findIndex(u => u.userId === parseInt(req.params.id));
-  if (userIndex !== -1) {
-    users[userIndex] = req.body;
-    res.json(users[userIndex]);
-  } else {
-    res.status(404).send("User not found");
+export const updateUser = async (req: Request, res: Response) => {
+  const userId = req.params.id;
+  const { user_name, email, password, role, phoneNumber } = req.body;
+
+  try {
+    const existingUserResult = await pool.query("SELECT * FROM users WHERE user_id = $1", [userId]);
+
+    if (existingUserResult.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : existingUserResult.rows[0].password;
+
+    const updatedUserResult = await pool.query(
+      "UPDATE users SET user_name = $1, user_email = $2, password = $3, role = $4, phone_number = $5 WHERE user_id = $6 RETURNING *",
+      [user_name, email, hashedPassword, role, phoneNumber, userId]
+    );
+
+    res.json(updatedUserResult.rows[0]);
+  } catch (err) {
+    console.error("Error updating user:", err);
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
 // Delete a user
-export const deleteUser = (req: Request, res: Response) => {
-  users = users.filter(u => u.userId !== parseInt(req.params.id));
-  res.status(204).send();
+export const deleteUser = async (req: Request, res: Response) => {
+  const userId = req.params.id;
+
+  try {
+    const existingUserResult = await pool.query("SELECT * FROM users WHERE user_id = $1", [userId]);
+
+    if (existingUserResult.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await pool.query("DELETE FROM users WHERE user_id = $1", [userId]);
+    res.status(204).send();
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.status(500).json({ error: (err as Error).message });
+  }
 };

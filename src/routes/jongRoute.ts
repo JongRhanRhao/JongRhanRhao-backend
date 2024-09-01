@@ -1,5 +1,3 @@
-// routes.ts
-
 import express from "express";
 import {
   getAllUsers,
@@ -56,11 +54,22 @@ router.delete("/stores/:id", deleteStore);
 // Table routes
 router.get("/tables", getAllTables);
 router.get("/tables/:id", getTableById);
-router.post("/tables", createTable)
+router.post("/tables", createTable);
+router.put("/tables/:id", updateTable);
+router.delete("/tables/:id", deleteTable);
 
-// Routes
+// Favorite routes
+router.get("/favorites", getAllFavorites);
+router.get("/favorites/:id", getFavoriteById);
+router.post("/favorites", createFavorite);
+router.put("/favorites/:id", updateFavorite);
+router.delete("/favorites/:id", deleteFavorite);
+
+// Reservation routes
 router.get("/reservations", getAllReservations);
 router.get("/reservations/:id", getReservationById);
 router.post("/reservations", createReservation);
 router.put("/reservations/:id", updateReservation);
 router.delete("/reservations/:id", deleteReservation);
+
+export default router;

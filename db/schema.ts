@@ -61,6 +61,7 @@ export const reservations = pgTable("reservations", {
   reservationDate: date("reservation_date").notNull(),
   reservationTime: varchar("reservation_time", { length: 255 }),
   reservationStatus: varchar("reservation_status", { length: 50 }).notNull(),
+  phoneNumber: varchar("phone_number", { length: 10 }),
 });
 
 // Favorites Table
