@@ -9,7 +9,7 @@ dotenv.config();
 const router = express.Router();
 
 router.post("/register", async (req: Request, res: Response) => {
-  const { user_name, email, password, role } = req.body; 
+  const { user_name, email, password, role, phone_number } = req.body;
 
   try {
     // Check if the user already exists by username or email
@@ -25,8 +25,8 @@ router.post("/register", async (req: Request, res: Response) => {
     // If the user doesn't exist, hash the password and create the user
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      "INSERT INTO users (user_name, user_email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
-      [user_name, email, hashedPassword, role]
+      "INSERT INTO users (user_name, user_email, password, role, phone_number) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [user_name, email, hashedPassword, role, phone_number]
     );
 
     const user = result.rows[0];
@@ -45,9 +45,10 @@ router.post("/register", async (req: Request, res: Response) => {
 router.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
-    const result = await pool.query("SELECT * FROM users WHERE user_email = $1", [
-      email,
-    ]);
+    const result = await pool.query(
+      "SELECT * FROM users WHERE user_email = $1",
+      [email]
+    );
     const user = result.rows[0];
 
     if (user && (await bcrypt.compare(password, user.password))) {
