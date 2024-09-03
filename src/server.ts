@@ -23,6 +23,7 @@ app.use("/api/jong", router);
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "JongRhanRhao backend is up and running!" });
 });
+app.use('/uploads', express.static('uploads'));
 
 const port = process.env.BACKEND_PORT || 3000;
 app.listen(port, () => {

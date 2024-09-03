@@ -12,6 +12,7 @@ import {
   createStore,
   updateStore,
   deleteStore,
+  uploadStoreImages,
 } from "../controller/storeController";
 import {
   getAllTables,
@@ -50,6 +51,7 @@ router.get("/stores/:id", getStoreById);
 router.post("/stores", createStore);
 router.put("/stores/:id", updateStore);
 router.delete("/stores/:id", deleteStore);
+router.post('/stores/:id/upload-image', uploadStoreImages);
 
 // Table routes
 router.get("/tables", getAllTables);

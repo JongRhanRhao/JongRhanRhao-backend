@@ -33,6 +33,14 @@ export const stores = pgTable("stores", {
   shopName: varchar("shop_name", { length: 255 }).notNull(),
   openTimeBooking: varchar("open_timebooking", { length: 255 }).notNull(),
   cancelReserve: varchar("cancel_reserve", { length: 255 }).notNull(),
+  // Removed the imageUrl field from here
+});
+
+// StoreImages Table (new table to store multiple images for each store)
+export const storeImages = pgTable("store_images", {
+  imageId: varchar("image_id").default(sql`generate_nanoid()`).primaryKey(),
+  storeId: varchar("store_id").references(() => stores.storeId).notNull(),
+  imageUrl: varchar("image_url", { length: 255 }).notNull(),
 });
 
 // Staff Table

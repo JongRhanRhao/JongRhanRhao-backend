@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import pool from "../db";
-
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { multerFile } from "../models/multerfile";
 // Get all stores
 export const getAllStores = async (req: Request, res: Response) => {
   try {
@@ -84,5 +87,69 @@ export const deleteStore = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Error deleting store:", err);
     res.status(500).json({ error: (err as Error).message });
+  }
+};
+
+// Configure multer for file storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = 'uploads/stores/';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Ensure unique file names
+  }
+});
+
+// Configure multer for multiple file uploads
+const upload = multer({ storage: storage }).array('images', 10); // Allow up to 10 images to be uploaded at once
+
+// Route to upload multiple store images
+export const uploadStoreImages = async (req: Request, res: Response) => {
+  const storeId = req.params.id;
+
+  try {
+    const existingStoreResult = await pool.query("SELECT * FROM stores WHERE store_id = $1", [storeId]);
+
+    if (existingStoreResult.rows.length === 0) {
+      return res.status(404).json({ message: "Store not found" });
+    }
+
+    // Handling multiple file uploads using multer
+    upload(req, res, async function (err) {
+      if (err) {
+        console.error("Multer error:", err.message);
+        return res.status(500).json({ error: "Error uploading images" });
+      }
+
+      if (!req.files || !(req.files as multer.File[]).length) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
+
+      // Collect the file paths of the uploaded images
+      const imageUrls = (req.files as multer.File[]).map(file => `/uploads/stores/${file.filename}`);
+
+      // Insert multiple image URLs into the database
+      try {
+        const insertImagePromises = imageUrls.map(imageUrl => {
+          return pool.query(
+            "INSERT INTO store_images (store_id, image_url) VALUES ($1, $2) RETURNING *",
+            [storeId, imageUrl]
+          );
+        });
+
+        const imageResults = await Promise.all(insertImagePromises);
+        res.json({ store: existingStoreResult.rows[0], images: imageResults.map(result => result.rows[0]) });
+      } catch (dbError) {
+        console.error("Database error:", dbError.message); // Log database errors
+        res.status(500).json({ error: "Error saving image URLs" });
+      }
+    });
+  } catch (err) {
+    console.error("Error in uploadStoreImages function:", err.message);
+    res.status(500).json({ error: "Server error" });
   }
 };
