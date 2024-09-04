@@ -16,7 +16,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.use("/api/auth", authRoutes);
+app.use("/users/auth", authRoutes);
 //POST: localhost:3000/api/auth/register {name, email, password, role}
 //POST: localhost:3000/api/auth/login {email, password}
 app.use("/api/jong", router);
