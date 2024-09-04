@@ -33,10 +33,26 @@ export const stores = pgTable("stores", {
   shopName: varchar("shop_name", { length: 255 }).notNull(),
   openTimeBooking: varchar("open_timebooking", { length: 255 }).notNull(),
   cancelReserve: varchar("cancel_reserve", { length: 255 }).notNull(),
-  // Removed the imageUrl field from here
+  address: varchar("address", { length: 255 }), // Add address field
+  status: varchar("status", { length: 50 }).notNull(), // Add status field
+  maxSeats: integer("max_seats").notNull(), // Add maxSeats field
+  currSeats: integer("curr_seats").notNull(), // Add currSeats field
 });
 
-// StoreImages Table (new table to store multiple images for each store)
+// Reviews Table (expanded for comments and likes)
+export const reviewsTable = pgTable("reviews", {
+  reviewId: varchar("review_id").default(sql`generate_nanoid()`).primaryKey(),
+  shopId: varchar("shop_id").references(() => stores.storeId).notNull(),
+  customerId: varchar("customer_id").references(() => users.userId).notNull(),
+  rating: integer("rating").notNull(),
+  reviewText: varchar("review_text", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  likes: integer("likes").default(0), // Add likes field
+  replies: integer("replies").default(0), // Add replies field
+  avatarUrl: varchar("avatar_url", { length: 255 }) // Add avatar field
+});
+
+// StoreImages Table 
 export const storeImages = pgTable("store_images", {
   imageId: varchar("image_id").default(sql`generate_nanoid()`).primaryKey(),
   storeId: varchar("store_id").references(() => stores.storeId).notNull(),
@@ -48,16 +64,6 @@ export const staff = pgTable("staff", {
   staffId: varchar("staff_id").default(sql`generate_nanoid()`).primaryKey(),
   shopId: varchar("shop_id").references(() => stores.storeId).notNull(),
   staffUserId: varchar("staff_user_id").references(() => users.userId).notNull(),
-});
-
-// Reviews Table
-export const reviews = pgTable("reviews", {
-  reviewId: varchar("review_id").default(sql`generate_nanoid()`).primaryKey(),
-  shopId: varchar("shop_id").references(() => stores.storeId).notNull(),
-  customerId: varchar("customer_id").references(() => users.userId).notNull(),
-  rating: integer("rating").notNull(),
-  reviewText: varchar("review_text", { length: 255 }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Reservations Table
