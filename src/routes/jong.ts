@@ -35,7 +35,6 @@ import {
   updateReservation,
   deleteReservation,
 } from "../controller/reservationController";
-
 const router = express.Router();
 
 // User routes
@@ -51,7 +50,7 @@ router.get("/stores/:id", getStoreById);
 router.post("/stores", createStore);
 router.put("/stores/:id", updateStore);
 router.delete("/stores/:id", deleteStore);
-router.post('/stores/:id/upload-image', uploadStoreImages);
+router.post("/stores/:id/upload-image", uploadStoreImages);
 
 // Table routes
 router.get("/tables", getAllTables);

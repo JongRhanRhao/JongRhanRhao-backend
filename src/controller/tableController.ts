@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import pool from "../db";
+import pool from "../config/db";
 
 // Get all tables
 export const getAllTables = async (req: Request, res: Response) => {
@@ -17,7 +17,10 @@ export const getTableById = async (req: Request, res: Response) => {
   const tableId = req.params.id;
 
   try {
-    const result = await pool.query("SELECT * FROM tables WHERE table_id = $1", [tableId]);
+    const result = await pool.query(
+      "SELECT * FROM tables WHERE table_id = $1",
+      [tableId]
+    );
     if (result.rows.length > 0) {
       res.json(result.rows[0]);
     } else {
@@ -52,7 +55,10 @@ export const updateTable = async (req: Request, res: Response) => {
   const { table_number, status, store_id } = req.body;
 
   try {
-    const existingTableResult = await pool.query("SELECT * FROM tables WHERE table_id = $1", [tableId]);
+    const existingTableResult = await pool.query(
+      "SELECT * FROM tables WHERE table_id = $1",
+      [tableId]
+    );
 
     if (existingTableResult.rows.length === 0) {
       return res.status(404).json({ message: "Table not found" });
@@ -75,7 +81,10 @@ export const deleteTable = async (req: Request, res: Response) => {
   const tableId = req.params.id;
 
   try {
-    const existingTableResult = await pool.query("SELECT * FROM tables WHERE table_id = $1", [tableId]);
+    const existingTableResult = await pool.query(
+      "SELECT * FROM tables WHERE table_id = $1",
+      [tableId]
+    );
 
     if (existingTableResult.rows.length === 0) {
       return res.status(404).json({ message: "Table not found" });

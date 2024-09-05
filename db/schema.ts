@@ -1,10 +1,20 @@
 import { is, sql } from "drizzle-orm";
 
-import { pgTable, varchar, integer, date, time, timestamp,boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  varchar,
+  integer,
+  date,
+  time,
+  timestamp,
+  boolean,
+} from "drizzle-orm/pg-core";
 
 // Users Table
 export const users = pgTable("users", {
-  userId: varchar("user_id").default(sql`generate_nanoid()`).primaryKey(),
+  userId: varchar("user_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
   userName: varchar("user_name", { length: 255 }).notNull(),
   userEmail: varchar("user_email", { length: 255 }).notNull(),
   password: varchar("password", { length: 255 }).notNull(),
@@ -14,23 +24,37 @@ export const users = pgTable("users", {
 
 // Roles Table
 export const roles = pgTable("roles", {
-  roleId: varchar("role_id").default(sql`generate_nanoid()`).primaryKey(),
+  roleId: varchar("role_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
   roleName: varchar("role_name", { length: 50 }).notNull(),
 });
 
 // UserRoles Table (many-to-many relationship between Users and Roles)
 export const userRoles = pgTable("userroles", {
-  userRoleId: varchar("userrole_id").default(sql`generate_nanoid()`).primaryKey(),
-  userId: varchar("user_id").references(() => users.userId).notNull(),
-  roleId: varchar("role_id").references(() => roles.roleId).notNull(),
+  userRoleId: varchar("userrole_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
+  userId: varchar("user_id")
+    .references(() => users.userId)
+    .notNull(),
+  roleId: varchar("role_id")
+    .references(() => roles.roleId)
+    .notNull(),
   shopId: varchar("shop_id").references(() => stores.storeId),
 });
 
 // Stores Table
 export const stores = pgTable("stores", {
-  storeId: varchar("store_id").default(sql`generate_nanoid()`).primaryKey(),
-  ownerId: varchar("owner_id").references(() => users.userId).notNull(),
-  staffId: varchar("staff_id").references(() => users.userId).notNull(),
+  storeId: varchar("store_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
+  ownerId: varchar("owner_id")
+    .references(() => users.userId)
+    .notNull(),
+  staffId: varchar("staff_id")
+    .references(() => users.userId)
+    .notNull(),
   shopName: varchar("shop_name", { length: 255 }).notNull(),
   openTimeBooking: varchar("open_timebooking", { length: 255 }).notNull(),
   cancelReserve: varchar("cancel_reserve", { length: 255 }).notNull(),
@@ -45,9 +69,15 @@ export const stores = pgTable("stores", {
 
 // Reviews Table (expanded for comments and likes)
 export const reviewsTable = pgTable("reviews", {
-  reviewId: varchar("review_id").default(sql`generate_nanoid()`).primaryKey(),
-  shopId: varchar("shop_id").references(() => stores.storeId).notNull(),
-  customerId: varchar("customer_id").references(() => users.userId).notNull(),
+  reviewId: varchar("review_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
+  shopId: varchar("shop_id")
+    .references(() => stores.storeId)
+    .notNull(),
+  customerId: varchar("customer_id")
+    .references(() => users.userId)
+    .notNull(),
   rating: integer("rating").notNull(),
   reviewText: varchar("review_text", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -56,25 +86,41 @@ export const reviewsTable = pgTable("reviews", {
   avatarUrl: varchar("avatar_url", { length: 255 }), // Add avatar field
 });
 
-// StoreImages Table 
+// StoreImages Table
 export const storeImages = pgTable("store_images", {
-  imageId: varchar("image_id").default(sql`generate_nanoid()`).primaryKey(),
-  storeId: varchar("store_id").references(() => stores.storeId).notNull(),
+  imageId: varchar("image_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
+  storeId: varchar("store_id")
+    .references(() => stores.storeId)
+    .notNull(),
   imageUrl: varchar("image_url", { length: 255 }).notNull(),
 });
 
 // Staff Table
 export const staff = pgTable("staff", {
-  staffId: varchar("staff_id").default(sql`generate_nanoid()`).primaryKey(),
-  shopId: varchar("shop_id").references(() => stores.storeId).notNull(),
-  staffUserId: varchar("staff_user_id").references(() => users.userId).notNull(),
+  staffId: varchar("staff_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
+  shopId: varchar("shop_id")
+    .references(() => stores.storeId)
+    .notNull(),
+  staffUserId: varchar("staff_user_id")
+    .references(() => users.userId)
+    .notNull(),
 });
 
 // Reservations Table
 export const reservations = pgTable("reservations", {
-  reservationId: varchar("reservation_id").default(sql`generate_nanoid()`).primaryKey(),
-  customerId: varchar("customer_id").references(() => users.userId).notNull(),
-  shopId: varchar("shop_id").references(() => stores.storeId).notNull(),
+  reservationId: varchar("reservation_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
+  customerId: varchar("customer_id")
+    .references(() => users.userId)
+    .notNull(),
+  shopId: varchar("shop_id")
+    .references(() => stores.storeId)
+    .notNull(),
   reservationDate: date("reservation_date").notNull(),
   reservationTime: varchar("reservation_time", { length: 255 }),
   reservationStatus: varchar("reservation_status", { length: 50 }).notNull(),
@@ -83,7 +129,13 @@ export const reservations = pgTable("reservations", {
 
 // Favorites Table
 export const favorites = pgTable("favorites", {
-  favoriteId: varchar("favorite_id").default(sql`generate_nanoid()`).primaryKey(),
-  customerId: varchar("customer_id").references(() => users.userId).notNull(),
-  storeId: varchar("store_id").references(() => stores.storeId).notNull(),
+  favoriteId: varchar("favorite_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
+  customerId: varchar("customer_id")
+    .references(() => users.userId)
+    .notNull(),
+  storeId: varchar("store_id")
+    .references(() => stores.storeId)
+    .notNull(),
 });
