@@ -46,6 +46,15 @@ export const createStore = async (req: Request, res: Response) => {
     currSeats
   } = req.body;
 
+  const existingStoreCheck = await pool.query(
+    "SELECT * FROM stores WHERE shop_name = $1 AND owner_id = $2",
+    [shopName, ownerId]
+  );
+
+  if (existingStoreCheck.rows.length > 0) {
+    return res.status(409).json({ error: "Store already exists" });
+  }
+
   try {
     const result = await pool.query(
       `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, open_timebooking, cancel_reserve, address, status, max_seats, curr_seats) 
