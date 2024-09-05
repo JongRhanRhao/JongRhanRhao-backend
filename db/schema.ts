@@ -1,5 +1,6 @@
-import { sql } from "drizzle-orm";
-import { pgTable, varchar, integer, date, time, timestamp } from "drizzle-orm/pg-core";
+import { is, sql } from "drizzle-orm";
+
+import { pgTable, varchar, integer, date, time, timestamp,boolean } from "drizzle-orm/pg-core";
 
 // Users Table
 export const users = pgTable("users", {
@@ -33,10 +34,13 @@ export const stores = pgTable("stores", {
   shopName: varchar("shop_name", { length: 255 }).notNull(),
   openTimeBooking: varchar("open_timebooking", { length: 255 }).notNull(),
   cancelReserve: varchar("cancel_reserve", { length: 255 }).notNull(),
-  address: varchar("address", { length: 255 }), // Add address field
-  status: varchar("status", { length: 50 }).notNull(), // Add status field
-  maxSeats: integer("max_seats").notNull(), // Add maxSeats field
-  currSeats: integer("curr_seats").notNull(), // Add currSeats field
+  address: varchar("address", { length: 255 }),
+  status: varchar("status", { length: 50 }).notNull(),
+  maxSeats: integer("max_seats").notNull(),
+  currSeats: integer("curr_seats").notNull(),
+  isFavorite: boolean("is_favorite").default(false),
+  isPopular: boolean("is_popular").default(false),
+  type: varchar("type", { length: 50 }), // Add type field
 });
 
 // Reviews Table (expanded for comments and likes)
@@ -49,7 +53,7 @@ export const reviewsTable = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   likes: integer("likes").default(0), // Add likes field
   replies: integer("replies").default(0), // Add replies field
-  avatarUrl: varchar("avatar_url", { length: 255 }) // Add avatar field
+  avatarUrl: varchar("avatar_url", { length: 255 }), // Add avatar field
 });
 
 // StoreImages Table 
@@ -71,7 +75,6 @@ export const reservations = pgTable("reservations", {
   reservationId: varchar("reservation_id").default(sql`generate_nanoid()`).primaryKey(),
   customerId: varchar("customer_id").references(() => users.userId).notNull(),
   shopId: varchar("shop_id").references(() => stores.storeId).notNull(),
-  partySize: integer("party_size").notNull(),
   reservationDate: date("reservation_date").notNull(),
   reservationTime: varchar("reservation_time", { length: 255 }),
   reservationStatus: varchar("reservation_status", { length: 50 }).notNull(),

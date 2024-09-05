@@ -29,18 +29,18 @@ export const getReservationById = async (req: Request, res: Response) => {
 
 // Create a new reservation
 export const createReservation = async (req: Request, res: Response) => {
-  const { customerId, shopId, partySize, reservationDate, reservationTime, reservationStatus, phoneNumber } = req.body;
+  const { customerId, shopId, reservationDate, reservationTime, reservationStatus, phoneNumber } = req.body;
 
-  try {
-    const result = await pool.query(
-      'INSERT INTO reservations (customer_id, shop_id, party_size, reservation_date, reservation_time, reservation_status, phone_number) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [customerId, shopId, partySize, reservationDate, reservationTime, reservationStatus, phoneNumber]
-    );
-    
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+try {
+  const result = await pool.query(
+    'INSERT INTO reservations (customer_id, shop_id, reservation_date, reservation_time, reservation_status, phone_number) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+    [customerId, shopId, reservationDate, reservationTime, reservationStatus, phoneNumber]
+  );
+
+  res.status(201).json(result.rows[0]);
+} catch (err) {
+  res.status(500).json({ error: err.message });
+}
 };
 
 // Update a reservation

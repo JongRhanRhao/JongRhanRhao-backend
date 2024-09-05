@@ -5,4 +5,7 @@ export interface Stores {
     name: string;
     openTimeBooking: string;
     cancelReserve: string;
+    isFavorite: boolean;
+    isPopular: boolean;
+    type: string;
   }

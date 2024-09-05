@@ -43,7 +43,10 @@ export const createStore = async (req: Request, res: Response) => {
     address,
     status,
     maxSeats,
-    currSeats
+    currSeats,
+    isFavorite,  // Add isFavorite
+    isPopular,   // Add isPopular
+    type         // Add type
   } = req.body;
 
   const existingStoreCheck = await pool.query(
@@ -57,10 +60,10 @@ export const createStore = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, open_timebooking, cancel_reserve, address, status, max_seats, curr_seats) 
-       VALUES (generate_nanoid(), $1, $2, $3, $4, $5, $6, $7, $8, $9) 
+      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, open_timebooking, cancel_reserve, address, status, max_seats, curr_seats, is_favorite, is_popular, type) 
+       VALUES (generate_nanoid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
        RETURNING *`,
-      [ownerId, staffId, shopName, openTimeBooking, cancelReserve, address, status, maxSeats, currSeats]
+      [ownerId, staffId, shopName, openTimeBooking, cancelReserve, address, status, maxSeats, currSeats, isFavorite, isPopular, type]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -81,7 +84,10 @@ export const updateStore = async (req: Request, res: Response) => {
     address,
     status,
     maxSeats,
-    currSeats
+    currSeats,
+    isFavorite,  // Add isFavorite
+    isPopular,   // Add isPopular
+    type         // Add type
   } = req.body;
 
   try {
@@ -93,10 +99,10 @@ export const updateStore = async (req: Request, res: Response) => {
 
     const updatedStoreResult = await pool.query(
       `UPDATE stores 
-      SET shop_name = $1, open_timebooking = $2, cancel_reserve = $3, owner_id = $4, staff_id = $5, address = $6, status = $7, max_seats = $8, curr_seats = $9 
-      WHERE store_id = $10 
+      SET shop_name = $1, open_timebooking = $2, cancel_reserve = $3, owner_id = $4, staff_id = $5, address = $6, status = $7, max_seats = $8, curr_seats = $9, is_favorite = $10, is_popular = $11, type = $12 
+      WHERE store_id = $13 
       RETURNING *`,
-      [shopName, openTimeBooking, cancelReserve, ownerId, staffId, address, status, maxSeats, currSeats, storeId]
+      [shopName, openTimeBooking, cancelReserve, ownerId, staffId, address, status, maxSeats, currSeats, isFavorite, isPopular, type, storeId]
     );
 
     res.json(updatedStoreResult.rows[0]);
