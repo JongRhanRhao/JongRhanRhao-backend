@@ -34,15 +34,28 @@ export const getStoreById = async (req: Request, res: Response) => {
 
 // Create a new store
 export const createStore = async (req: Request, res: Response) => {
-  const { ownerId, staffId, shopName, openTimeBooking, cancelReserve } = req.body;
+  const {
+    ownerId,
+    staffId,
+    shopName,
+    openTimeBooking,
+    cancelReserve,
+    address,
+    status,
+    maxSeats,
+    currSeats
+  } = req.body;
 
   try {
     const result = await pool.query(
-      'INSERT INTO stores (store_id, owner_id, staff_id, shop_name, open_timebooking, cancel_reserve) VALUES (generate_nanoid(), $1, $2, $3, $4, $5) RETURNING *',
-      [ownerId, staffId, shopName, openTimeBooking, cancelReserve]
+      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, open_timebooking, cancel_reserve, address, status, max_seats, curr_seats) 
+       VALUES (generate_nanoid(), $1, $2, $3, $4, $5, $6, $7, $8, $9) 
+       RETURNING *`,
+      [ownerId, staffId, shopName, openTimeBooking, cancelReserve, address, status, maxSeats, currSeats]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    console.error("Error creating store:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
@@ -50,7 +63,17 @@ export const createStore = async (req: Request, res: Response) => {
 // Update a store
 export const updateStore = async (req: Request, res: Response) => {
   const storeId = req.params.id;
-  const { shopName, openTimeBooking, cancelReserve, ownerId, staffId } = req.body;
+  const {
+    shopName,
+    openTimeBooking,
+    cancelReserve,
+    ownerId,
+    staffId,
+    address,
+    status,
+    maxSeats,
+    currSeats
+  } = req.body;
 
   try {
     const existingStoreResult = await pool.query("SELECT * FROM stores WHERE store_id = $1", [storeId]);
@@ -60,14 +83,17 @@ export const updateStore = async (req: Request, res: Response) => {
     }
 
     const updatedStoreResult = await pool.query(
-      "UPDATE stores SET shop_name = $1, open_timebooking = $2, cancel_reserve = $3, owner_id = $4, staff_id = $5 WHERE store_id = $6 RETURNING *",
-      [shopName, openTimeBooking, cancelReserve, ownerId, staffId, storeId]
+      `UPDATE stores 
+      SET shop_name = $1, open_timebooking = $2, cancel_reserve = $3, owner_id = $4, staff_id = $5, address = $6, status = $7, max_seats = $8, curr_seats = $9 
+      WHERE store_id = $10 
+      RETURNING *`,
+      [shopName, openTimeBooking, cancelReserve, ownerId, staffId, address, status, maxSeats, currSeats, storeId]
     );
 
     res.json(updatedStoreResult.rows[0]);
   } catch (err) {
-    console.error("Error updating store:", err);
-    res.status(500).json({ error: (err as Error).message });
+    console.error("Error updating store:", err.message);
+    res.status(500).json({ error: err.message });
   }
 };
 
