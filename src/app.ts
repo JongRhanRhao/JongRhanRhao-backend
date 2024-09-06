@@ -35,7 +35,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/users/auth", auth);
-app.use("/api/jong", jong);
+app.use("/stores/api", jong);
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req: Request, res: Response) => {
