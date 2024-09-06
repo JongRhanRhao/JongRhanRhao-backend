@@ -1,17 +1,15 @@
 import { Strategy as LocalStrategy } from "passport-local";
-import { drizzle } from "drizzle-orm/node-postgres";
 import bcrypt from "bcryptjs";
-import { users } from "../../../db/schema";
-import pool from "../../config/db";
 import { eq } from "drizzle-orm";
 
-const db = drizzle(pool);
+import { dbClient } from "../../../db/client";
+import { users } from "../../../db/schema";
 
 export const localStrat = new LocalStrategy(
   { usernameField: "email" },
   async (email: string, password: string, done) => {
     try {
-      const result = await db
+      const result = await dbClient
         .select()
         .from(users)
         .where(eq(users.userEmail, email))
