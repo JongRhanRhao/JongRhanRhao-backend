@@ -1,7 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { eq, or } from "drizzle-orm";
 import { users } from "../../db/schema";
-import passport from "passport";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -54,27 +53,27 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const localLogin = async (req: Request, res: Response) => {
-  router.post("/login", async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    try {
-      const result = await pool.query(
-        "SELECT * FROM users WHERE user_email = $1",
-        [email]
-      );
-      const user = result.rows[0];
+  const { email, password } = req.body;
+  try {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.userEmail, email))
+      .limit(1);
 
-      if (user && (await bcrypt.compare(password, user.password))) {
-        const token = jwt.sign(
-          { userId: user.user_id, email: user.user_email, role: user.role },
-          process.env.JWT_SECRET || "secret",
-          { expiresIn: "1h" }
-        );
-        res.json({ token });
-      } else {
-        res.status(401).json({ message: "Invalid credentials" });
-      }
-    } catch (err) {
-      res.status(500).json({ error: (err as Error).message });
+    const user = result[0];
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const token = jwt.sign(
+        { userId: user.userId, email: user.userEmail, role: user.role },
+        process.env.JWT_SECRET || "secret",
+        { expiresIn: "1h" }
+      );
+      res.json({ token });
+    } else {
+      res.status(401).json({ message: "Invalid credentials" });
     }
-  });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
 };
