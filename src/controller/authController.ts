@@ -1,4 +1,3 @@
-import { drizzle } from "drizzle-orm/node-postgres";
 import { eq, or } from "drizzle-orm";
 import { users } from "../../db/schema";
 import bcrypt from "bcryptjs";
@@ -6,18 +5,16 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import express from "express";
 import { Request, Response } from "express";
-
-import pool from "../config/db";
+import { dbClient } from "../../db/client";
 
 dotenv.config();
-const db = drizzle(pool);
 const router = express.Router();
 
 export const register = async (req: Request, res: Response) => {
   const { user_name, email, password, role, phone_number } = req.body;
 
   try {
-    const existingUser = await db
+    const existingUser = await dbClient
       .select()
       .from(users)
       .where(or(eq(users.userName, user_name), eq(users.userEmail, email)))
@@ -29,7 +26,7 @@ export const register = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const [newUser] = await db
+    const [newUser] = await dbClient
       .insert(users)
       .values({
         userName: user_name,
