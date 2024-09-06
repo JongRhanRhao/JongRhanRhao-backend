@@ -1,3 +1,6 @@
+import { drizzle } from "drizzle-orm/node-postgres";
+import { eq, or } from "drizzle-orm";
+import { users } from "../../db/schema";
 import passport from "passport";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -10,29 +13,37 @@ import { Strategy as FacebookStrategy } from "passport-facebook";
 import pool from "../config/db";
 
 dotenv.config();
+const db = drizzle(pool);
 
 export const register = async (req: Request, res: Response) => {
   const { user_name, email, password, role, phone_number } = req.body;
 
   try {
-    const existingUserResult = await pool.query(
-      "SELECT * FROM users WHERE user_name = $1 OR user_email = $2",
-      [user_name, email]
-    );
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(or(eq(users.userName, user_name), eq(users.userEmail, email)))
+      .limit(1);
 
-    if (existingUserResult.rows.length > 0) {
+    if (existingUser.length > 0) {
       return res.status(409).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      "INSERT INTO users (user_name, user_email, password, role, phone_number) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [user_name, email, hashedPassword, role, phone_number]
-    );
 
-    const user = result.rows[0];
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        userName: user_name,
+        userEmail: email,
+        password: hashedPassword,
+        role,
+        phoneNumber: phone_number,
+      })
+      .returning();
+
     const token = jwt.sign(
-      { userId: user.user_id, email: user.user_email, role: user.role },
+      { userId: newUser.userId, email: newUser.userEmail, role: newUser.role },
       process.env.JWT_SECRET || "enviably-utensil-mountain",
       { expiresIn: "1h" }
     );
@@ -43,18 +54,23 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
-  passport.authenticate("local", { session: true }),
-    (req: Request, res: Response) => {
-      const user = req.body;
-      const token = jwt.sign(
-        { userId: user.user_id, email: user.user_email, role: user.role },
-        process.env.JWT_SECRET || "enviably-utensil-mountain",
-        { expiresIn: "1h" }
-      );
+export const login = async (req: Request, res: Response, next: Function) => {
+  passport.authenticate("local", { session: false }, (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-      res.json({ token });
-    };
+    const token = jwt.sign(
+      { userId: user.user_id, email: user.user_email, role: user.role },
+      process.env.JWT_SECRET || "enviably-utensil-mountain",
+      { expiresIn: "1d" }
+    );
+
+    return res.json({ token });
+  })(req, res, next);
 };
 
 export const localStrat = new LocalStrategy(
