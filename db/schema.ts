@@ -49,12 +49,8 @@ export const stores = pgTable("stores", {
   storeId: varchar("store_id")
     .default(sql`generate_nanoid()`)
     .primaryKey(),
-  ownerId: varchar("owner_id")
-    .references(() => users.userId)
-    .notNull(),
-  staffId: varchar("staff_id")
-    .references(() => users.userId)
-    .notNull(),
+  ownerId: varchar("owner_id").references(() => users.userId),
+  staffId: varchar("staff_id").references(() => users.userId),
   shopName: varchar("shop_name", { length: 255 }).notNull(),
   openTimeBooking: varchar("open_timebooking", { length: 255 }).notNull(),
   cancelReserve: varchar("cancel_reserve", { length: 255 }).notNull(),
