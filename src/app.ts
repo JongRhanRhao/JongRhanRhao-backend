@@ -3,10 +3,12 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import passport from "passport";
-import session from "express-session";
 import helmet from "helmet";
 
-import "./config/passport";
+import { NODE_ENV } from "./utils/env";
+import { sessionInstance } from "./auth/session";
+import "./auth/passport";
+
 import auth from "./routes/auth";
 import jong from "./routes/jong";
 
@@ -19,21 +21,20 @@ const corsOptions = {
   credentials: true,
 };
 
+// Middlewares
 app.use(cors(corsOptions));
 app.use(helmet());
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "tanned-catchable-spool",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+// Session
+if (NODE_ENV === "production") app.set("trust proxy", 1);
+app.use(sessionInstance);
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Routes
 app.use("/users/auth", auth);
 app.use("/stores/api/", jong);
 app.use("/uploads", express.static("uploads"));
