@@ -1,9 +1,9 @@
-import { Pool } from "pg";
+import pg from "pg";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const pool = new Pool({
+const pool = new pg.Pool({
   host: process.env.POSTGRES_HOST,
   port: parseInt(process.env.POSTGRES_PORT || "5432"),
   user: process.env.POSTGRES_USER,
