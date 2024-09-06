@@ -51,29 +51,3 @@ export const register = async (req: Request, res: Response) => {
     res.status(500).json({ error: (err as Error).message });
   }
 };
-
-export const localLogin = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  try {
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.userEmail, email))
-      .limit(1);
-
-    const user = result[0];
-
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const token = jwt.sign(
-        { userId: user.userId, email: user.userEmail, role: user.role },
-        process.env.JWT_SECRET || "secret",
-        { expiresIn: "1h" }
-      );
-      res.json({ token });
-    } else {
-      res.status(401).json({ message: "Invalid credentials" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
-  }
-};
