@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import pool from "../db";
+import pool from "../config/db";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -19,7 +19,9 @@ export const getUserById = async (req: Request, res: Response) => {
   const userId = req.params.id;
 
   try {
-    const result = await pool.query("SELECT * FROM users WHERE user_id = $1", [userId]);
+    const result = await pool.query("SELECT * FROM users WHERE user_id = $1", [
+      userId,
+    ]);
     if (result.rows.length > 0) {
       res.json(result.rows[0]);
     } else {
@@ -57,7 +59,11 @@ export const createUser = async (req: Request, res: Response) => {
 
     // Create a token for the new user
     const token = jwt.sign(
-      { userId: newUser.user_id, email: newUser.user_email, role: newUser.role },
+      {
+        userId: newUser.user_id,
+        email: newUser.user_email,
+        role: newUser.role,
+      },
       process.env.JWT_SECRET || "secret",
       { expiresIn: "1h" }
     );
@@ -65,7 +71,6 @@ export const createUser = async (req: Request, res: Response) => {
     // Respond with the token
     console.log("New user created:", newUser);
     res.status(201).json({ token });
-
   } catch (err) {
     console.error("Error creating user:", err);
     res.status(500).json({ error: (err as Error).message });
@@ -78,13 +83,18 @@ export const updateUser = async (req: Request, res: Response) => {
   const { user_name, email, password, role, phoneNumber } = req.body;
 
   try {
-    const existingUserResult = await pool.query("SELECT * FROM users WHERE user_id = $1", [userId]);
+    const existingUserResult = await pool.query(
+      "SELECT * FROM users WHERE user_id = $1",
+      [userId]
+    );
 
     if (existingUserResult.rows.length === 0) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : existingUserResult.rows[0].password;
+    const hashedPassword = password
+      ? await bcrypt.hash(password, 10)
+      : existingUserResult.rows[0].password;
 
     const updatedUserResult = await pool.query(
       "UPDATE users SET user_name = $1, user_email = $2, password = $3, role = $4, phone_number = $5 WHERE user_id = $6 RETURNING *",
@@ -103,7 +113,10 @@ export const deleteUser = async (req: Request, res: Response) => {
   const userId = req.params.id;
 
   try {
-    const existingUserResult = await pool.query("SELECT * FROM users WHERE user_id = $1", [userId]);
+    const existingUserResult = await pool.query(
+      "SELECT * FROM users WHERE user_id = $1",
+      [userId]
+    );
 
     if (existingUserResult.rows.length === 0) {
       return res.status(404).json({ message: "User not found" });
