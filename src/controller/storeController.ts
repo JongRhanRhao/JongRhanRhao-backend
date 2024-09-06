@@ -101,9 +101,9 @@ export const updateStore = async (req: Request, res: Response) => {
     status,
     maxSeats,
     currSeats,
-    isFavorite, // Add isFavorite
-    isPopular, // Add isPopular
-    type, // Add type
+    isFavorite,
+    isPopular,
+    type,
   } = req.body;
 
   try {
@@ -160,7 +160,7 @@ export const deleteStore = async (req: Request, res: Response) => {
     }
 
     await pool.query("DELETE FROM stores WHERE store_id = $1", [storeId]);
-    res.status(204).send();
+    res.status(204).send({ message: "Store deleted" });
   } catch (err) {
     console.error("Error deleting store:", err);
     res.status(500).json({ error: (err as Error).message });
