@@ -1,8 +1,9 @@
 import { Strategy as LocalStrategy } from "passport-local";
-import pool from "../../config/db";
-import { users } from "../../../db/schema";
-import bcrypt from "bcryptjs";
 import { drizzle } from "drizzle-orm/node-postgres";
+import bcrypt from "bcryptjs";
+import { users } from "../../../db/schema";
+import pool from "../../config/db";
+import { eq } from "drizzle-orm";
 
 const db = drizzle(pool);
 
@@ -10,12 +11,22 @@ export const localStrat = new LocalStrategy(
   { usernameField: "email" },
   async (email: string, password: string, done) => {
     try {
-      const user = await db.select().from(users);
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.userEmail, email))
+        .limit(1);
 
-      if (!user) return done(null, false, { message: "User not found" });
+      const user = result[0];
 
-      const isMatch = await bcrypt.compare(password, user[0].password);
-      if (!isMatch) return done(null, false, { message: "Incorrect password" });
+      if (!user) {
+        return done(null, false, { message: "User not found" });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return done(null, false, { message: "Incorrect password" });
+      }
 
       return done(null, user);
     } catch (err) {
