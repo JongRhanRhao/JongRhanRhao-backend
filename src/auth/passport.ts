@@ -1,8 +1,9 @@
-import passport from "passport";
+import { eq } from "drizzle-orm";
+import passportIns from "passport";
 import passportInstance from "passport";
 import Debug from "debug";
 
-import { localStrat } from "../auth/strategies/local.ts";
+import { localStrat } from "./strategies/local";
 import pool from "../config/db";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { users } from "../../db/schema";
@@ -10,17 +11,28 @@ import { users } from "../../db/schema";
 const debug = Debug("app:passport");
 const db = drizzle(pool);
 
-passport.use("local", localStrat);
+passportIns.use(localStrat);
 
-passportInstance.serializeUser((user: any, done) => {
+passportIns.serializeUser((user: any, done) => {
   debug("@passport serialize");
-  done(null, user.user_id);
+  done(null, user.userId);
 });
 
-passportInstance.deserializeUser(async (id: string, done) => {
+passportIns.deserializeUser(async (id: string, done) => {
   debug("@passport deserialize");
   try {
-    const user = await db.select().from(users);
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.userId, id))
+      .limit(1);
+
+    const user = result[0];
+
+    if (!user) {
+      return done(new Error("User not found"));
+    }
+
     done(null, user);
   } catch (err) {
     done(err);
