@@ -17,9 +17,10 @@ export const users = pgTable("users", {
     .primaryKey(),
   userName: varchar("user_name", { length: 255 }).notNull(),
   userEmail: varchar("user_email", { length: 255 }).notNull(),
-  password: varchar("password", { length: 255 }).notNull(),
+  password: varchar("password", { length: 255 }),
   role: varchar("role", { length: 20 }).notNull(),
   phoneNumber: varchar("phone_number", { length: 15 }),
+  googleId: varchar("google_id", { length: 255 }),
 });
 
 // Roles Table
