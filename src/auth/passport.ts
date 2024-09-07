@@ -29,7 +29,7 @@ passportIns.deserializeUser(async (id: string, done) => {
       .where(eq(users.userId, id))
       .limit(1);
 
-    const user = result[0];
+    const user: any = result[0];
 
     if (!user) {
       return done(new Error("User not found"));
