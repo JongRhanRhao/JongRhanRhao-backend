@@ -6,6 +6,7 @@
     "target": "es2016",
     "module": "commonjs",
     "baseUrl": "./",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "paths": {
       "@src/*": ["./src/*"],
       "@db/*": ["./db/*"]
