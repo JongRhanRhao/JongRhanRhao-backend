@@ -1,15 +1,13 @@
+import { User } from "../models/users";
 import * as multer from "multer";
 declare global {
   namespace Express {
-    // interface User {
-    //   user_id: string;
-    //   user_email: string;
-    //   role: string;
-    // }
-
     interface Request {
-      // user?: User;
       files?: multer.File[];
+    }
+    interface Request {
+      isAuthenticated: () => boolean;
+      user?: User;
     }
   }
 }
