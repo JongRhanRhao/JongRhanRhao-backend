@@ -17,12 +17,15 @@ router.post(
   }
 );
 
-router.get("/google", passport.authenticate("google", { scope: ["profile"] }));
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
-    res.redirect("/");
+    res.redirect("http://localhost:5173");
   }
 );
 
@@ -46,6 +49,21 @@ router.get("/me", (req: Request, res: Response) => {
   } else {
     res.status(401).json({ message: "Unauthorized" });
   }
+});
+
+router.get("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).send("Failed to log out");
+    }
+    (req as any).session.destroy((err) => {
+      if (err) {
+        return res.status(500).send("Failed to destroy session");
+      }
+      res.clearCookie("connect.sid");
+      res.redirect("/");
+    });
+  });
 });
 
 export default router;
