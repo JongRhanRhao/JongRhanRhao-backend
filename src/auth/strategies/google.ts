@@ -10,10 +10,19 @@ export const googleStrat = new GoogleStrategy(
   {
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/users/api/auth/google/callback`,
+    callbackURL: `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/users/auth/google/callback`,
   },
   async function (accessToken, refreshToken, profile, cb) {
     try {
+      const email =
+        profile.emails && profile.emails.length > 0
+          ? profile.emails[0].value
+          : null;
+
+      if (!email) {
+        return cb(new Error("No email returned from Google"), null);
+      }
+
       const existingUser = await dbClient
         .select()
         .from(users)
