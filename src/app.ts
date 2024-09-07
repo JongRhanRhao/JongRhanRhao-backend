@@ -26,10 +26,10 @@ app.use(cors(corsOptions));
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(sessionInstance);
 
 // Session
 if (NODE_ENV === "production") app.set("trust proxy", 1);
-app.use(sessionInstance);
 
 app.use(passport.initialize());
 app.use(passport.session());
