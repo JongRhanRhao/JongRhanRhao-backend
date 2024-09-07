@@ -14,15 +14,6 @@ export const googleStrat = new GoogleStrategy(
   },
   async function (accessToken, refreshToken, profile, cb) {
     try {
-      const email =
-        profile.emails && profile.emails.length > 0
-          ? profile.emails[0].value
-          : null;
-
-      if (!email) {
-        return cb(new Error("No email returned from Google"), null);
-      }
-
       const existingUser = await dbClient
         .select()
         .from(users)
@@ -39,6 +30,7 @@ export const googleStrat = new GoogleStrategy(
           userName: profile.displayName,
           userEmail: profile.emails[0].value,
           googleId: profile.id,
+          phoneNumber: profile.phone,
           role: "user",
         })
         .returning();
