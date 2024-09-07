@@ -50,20 +50,18 @@ export const stores = pgTable("stores", {
   storeId: varchar("store_id")
     .default(sql`generate_nanoid()`)
     .primaryKey(),
-  ownerId: varchar("owner_id")
-    .references(() => users.userId)
-    .notNull(),
-  staffId: varchar("staff_id")
-    .references(() => users.userId)
-    .notNull(),
+  ownerId: varchar("owner_id").references(() => users.userId),
+  staffId: varchar("staff_id").references(() => users.userId),
   shopName: varchar("shop_name", { length: 255 }).notNull(),
+  description: varchar("description", { length: 255 }),
+  rating: integer("rating").default(0),
+  imageUrl: varchar("image_url", { length: 255 }),
   openTimeBooking: varchar("open_timebooking", { length: 255 }).notNull(),
   cancelReserve: varchar("cancel_reserve", { length: 255 }).notNull(),
   address: varchar("address", { length: 255 }),
   status: varchar("status", { length: 50 }).notNull(),
   maxSeats: integer("max_seats").notNull(),
   currSeats: integer("curr_seats").notNull(),
-  isFavorite: boolean("is_favorite").default(false),
   isPopular: boolean("is_popular").default(false),
   type: varchar("type", { length: 50 }), // Add type field
 });
