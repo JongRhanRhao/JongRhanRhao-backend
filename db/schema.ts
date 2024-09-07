@@ -15,9 +15,10 @@ export const users = pgTable("users", {
   userId: varchar("user_id")
     .default(sql`generate_nanoid()`)
     .primaryKey(),
+  googleId: varchar("google_id", { length: 255 }), // Will be populated for Google OAuth users
   userName: varchar("user_name", { length: 255 }).notNull(),
   userEmail: varchar("user_email", { length: 255 }).notNull(),
-  password: varchar("password", { length: 255 }).notNull(),
+  password: varchar("password", { length: 255 }), // Optional for Google OAuth users
   role: varchar("role", { length: 20 }).notNull(),
   phoneNumber: varchar("phone_number", { length: 15 }),
 });

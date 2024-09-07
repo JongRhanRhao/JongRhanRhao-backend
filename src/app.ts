@@ -7,7 +7,7 @@ import helmet from "helmet";
 
 import { NODE_ENV } from "./utils/env";
 import { sessionInstance } from "./auth/session";
-import "./auth/passport";
+import "./auth/passport";  // Ensure passport strategies are loaded
 
 import auth from "./routes/auth";
 import jong from "./routes/jong";

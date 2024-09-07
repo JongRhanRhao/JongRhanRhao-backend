@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import passportIns from "passport";
-import passportInstance from "passport";
+import passport from "passport";
 import Debug from "debug";
 
 import { localStrat } from "./strategies/local";
+import { googleStrat } from "./strategies/google"; // Import googleStrat
 import pool from "../config/db";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { users } from "../../db/schema";
@@ -11,15 +11,22 @@ import { users } from "../../db/schema";
 const debug = Debug("app:passport");
 const db = drizzle(pool);
 
-passportIns.use(localStrat);
+// Use both local and google strategies
+passport.use(localStrat);
+passport.use(googleStrat);
 
-passportIns.serializeUser((user: any, done) => {
-  debug("@passport serialize");
-  done(null, user.userId);
+passport.serializeUser((user: any, done) => {
+  try {
+    debug(`Serializing user with ID: ${user.userId}`);
+    done(null, user.userId);
+  } catch (err) {
+    debug("Error during serialization", err);
+    done(err);
+  }
 });
 
-passportIns.deserializeUser(async (id: string, done) => {
-  debug("@passport deserialize");
+passport.deserializeUser(async (id: string, done) => {
+  debug(`Deserializing user with ID: ${id}`);
   try {
     const result = await db
       .select()
@@ -35,8 +42,9 @@ passportIns.deserializeUser(async (id: string, done) => {
 
     done(null, user);
   } catch (err) {
+    debug("Error during deserialization", err);
     done(err);
   }
 });
 
-export default passportInstance;
+export default passport;
