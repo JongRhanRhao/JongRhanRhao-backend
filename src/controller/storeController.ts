@@ -3,7 +3,7 @@ import pool from "../config/db";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { multerFile } from "../models/multerfile";
+
 // Get all stores
 export const getAllStores = async (req: Request, res: Response) => {
   try {
@@ -45,11 +45,13 @@ export const createStore = async (req: Request, res: Response) => {
     cancelReserve,
     address,
     status,
+    rating,
     maxSeats,
     currSeats,
-    isFavorite, // Add isFavorite
-    isPopular, // Add isPopular
-    type, // Add type
+    isPopular,
+    type,
+    imageUrl,
+    description,
   } = req.body;
 
   const existingStoreCheck = await pool.query(
@@ -63,20 +65,22 @@ export const createStore = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, open_timebooking, cancel_reserve, address, status, max_seats, curr_seats, is_favorite, is_popular, type) 
-       VALUES (generate_nanoid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, max_seats, curr_seats, is_popular, type) 
+       VALUES (generate_nanoid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
        RETURNING *`,
       [
         ownerId,
         staffId,
         shopName,
+        description,
+        imageUrl,
         openTimeBooking,
         cancelReserve,
         address,
         status,
+        rating,
         maxSeats,
         currSeats,
-        isFavorite,
         isPopular,
         type,
       ]
@@ -101,9 +105,11 @@ export const updateStore = async (req: Request, res: Response) => {
     status,
     maxSeats,
     currSeats,
-    isFavorite,
     isPopular,
     type,
+    description,
+    imageUrl,
+    rating,
   } = req.body;
 
   try {
@@ -118,22 +124,24 @@ export const updateStore = async (req: Request, res: Response) => {
 
     const updatedStoreResult = await pool.query(
       `UPDATE stores 
-      SET shop_name = $1, open_timebooking = $2, cancel_reserve = $3, owner_id = $4, staff_id = $5, address = $6, status = $7, max_seats = $8, curr_seats = $9, is_favorite = $10, is_popular = $11, type = $12 
-      WHERE store_id = $13 
+      SET shop_name = $1, open_timebooking = $2, cancel_reserve = $3, description = $4 , owner_id = $5, staff_id = $6, address = $7, status = $8, max_seats = $9, curr_seats = $10, is_popular = $11, type = $12, image_url = $13, rating = $14 
+      WHERE store_id = $15
       RETURNING *`,
       [
         shopName,
         openTimeBooking,
         cancelReserve,
+        description,
         ownerId,
         staffId,
         address,
         status,
         maxSeats,
         currSeats,
-        isFavorite,
         isPopular,
         type,
+        imageUrl,
+        rating,
         storeId,
       ]
     );
