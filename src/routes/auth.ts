@@ -45,6 +45,9 @@ router.get("/me", (req: Request, res: Response) => {
       userId: req.user?.userId,
       userName: req.user?.userName,
       userEmail: req.user?.userEmail,
+      userRole: req.user?.role,
+      phoneNumber: req.user?.phoneNumber,
+      googleId: req.user?.googleId,
     });
   } else {
     res.status(401).json({ message: "Unauthorized" });
@@ -61,7 +64,6 @@ router.get("/logout", (req, res) => {
         return res.status(500).send("Failed to destroy session");
       }
       res.clearCookie("connect.sid");
-      res.redirect("/");
     });
   });
 });
