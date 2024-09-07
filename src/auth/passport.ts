@@ -7,11 +7,13 @@ import { localStrat } from "./strategies/local";
 import pool from "../config/db";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { users } from "../../db/schema";
+import { googleStrat } from "./strategies/google";
 
 const debug = Debug("app:passport");
 const db = drizzle(pool);
 
 passportIns.use(localStrat);
+passportIns.use(googleStrat);
 
 passportIns.serializeUser((user: any, done) => {
   debug("@passport serialize");
