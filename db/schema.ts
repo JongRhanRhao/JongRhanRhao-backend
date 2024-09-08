@@ -111,9 +111,7 @@ export const staff = pgTable("staff", {
 
 // Reservations Table
 export const reservations = pgTable("reservations", {
-  reservationId: varchar("reservation_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  reservationId: varchar("reservation_id").primaryKey(),
   customerId: varchar("customer_id")
     .references(() => users.userId)
     .notNull(),
