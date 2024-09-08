@@ -30,7 +30,39 @@ export const getReservationById = async (req: Request, res: Response) => {
   }
 };
 
-// Create a new reservation
+// Get a reservation by customer ID with the shop name
+export const getReservationByCustomerId = async (
+  req: Request,
+  res: Response
+) => {
+  const id = req.params.id;
+  try {
+    const result = await pool.query(
+      `SELECT 
+        r.reservation_id,
+        r.reservation_date,
+        r.reservation_time,
+        r.reservation_status,
+        r.phone_number,
+        s.shop_name
+      FROM reservations r
+      JOIN stores s ON r.shop_id = s.store_id
+      WHERE r.customer_id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching reservation:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Create a new reservation with custom reservationId format (e.g., JRR0001)
 export const createReservation = async (req: Request, res: Response) => {
   const {
     customerId,
@@ -42,9 +74,26 @@ export const createReservation = async (req: Request, res: Response) => {
   } = req.body;
 
   try {
+    const lastReservation = await pool.query(
+      "SELECT reservation_id FROM reservations ORDER BY reservation_id DESC LIMIT 1"
+    );
+
+    let newReservationId;
+    if (lastReservation.rows.length > 0) {
+      const lastId = lastReservation.rows[0].reservation_id;
+      const numericPart = parseInt(lastId.slice(3));
+
+      const newNumericPart = (numericPart + 1).toString().padStart(4, "0");
+      newReservationId = `JRR${newNumericPart}`;
+    } else {
+      newReservationId = "JRR0001";
+    }
+
     const result = await pool.query(
-      "INSERT INTO reservations (customer_id, shop_id, reservation_date, reservation_time, reservation_status, phone_number) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+      `INSERT INTO reservations (reservation_id, customer_id, shop_id, reservation_date, reservation_time, reservation_status, phone_number)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [
+        newReservationId,
         customerId,
         shopId,
         reservationDate,
@@ -56,6 +105,7 @@ export const createReservation = async (req: Request, res: Response) => {
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    console.error("Error creating reservation:", err);
     res.status(500).json({ error: err.message });
   }
 };
