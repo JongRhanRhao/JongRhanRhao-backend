@@ -34,6 +34,7 @@ import {
   createReservation,
   updateReservation,
   deleteReservation,
+  getReservationByCustomerId,
 } from "../controller/reservationController";
 const router = express.Router();
 
@@ -69,6 +70,7 @@ router.delete("/favorites/:id", deleteFavorite);
 // Reservation routes
 router.get("/reservations", getAllReservations);
 router.get("/reservations/:id", getReservationById);
+router.get("/reservations/customer/:id", getReservationByCustomerId);
 router.post("/reservations", createReservation);
 router.put("/reservations/:id", updateReservation);
 router.delete("/reservations/:id", deleteReservation);
