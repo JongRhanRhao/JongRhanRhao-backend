@@ -44,6 +44,7 @@ export const getReservationByCustomerId = async (
         r.reservation_time,
         r.reservation_status,
         r.phone_number,
+        r.shop_id,
         s.shop_name
       FROM reservations r
       JOIN stores s ON r.shop_id = s.store_id
