@@ -1,7 +1,10 @@
 export interface User {
-    userId: number;
-    userName: string;
-    userEmail: string;
-    password: string;
-    role: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  password: string | null;
+  role: string;
+  phoneNumber: string | null;
+  googleId: string | null;
+  facebookId: string | null;
   }

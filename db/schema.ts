@@ -21,6 +21,7 @@ export const users = pgTable("users", {
   role: varchar("role", { length: 20 }).notNull(),
   phoneNumber: varchar("phone_number", { length: 15 }),
   googleId: varchar("google_id", { length: 255 }),
+  facebookId: varchar("facebook_id", { length: 255 }),
 });
 
 // Roles Table
