@@ -21,7 +21,9 @@ export const localStrat = new LocalStrategy(
         return done(null, false, { message: "User not found" });
       }
 
-      const isMatch = await bcrypt.compare(password, user.password);
+      const isMatch =
+        user.password !== null &&
+        (await bcrypt.compare(password, user.password));
       if (!isMatch) {
         return done(null, false, { message: "Incorrect password" });
       }
