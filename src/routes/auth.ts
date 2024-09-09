@@ -3,7 +3,6 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 dotenv.config();
 import { register } from "../controller/authController";
-import { User } from "../models/users";
 const router = express.Router();
 
 router.post("/register", register);
