@@ -66,13 +66,22 @@ router.get("/me", (req: Request, res: Response) => {
 router.get("/logout", (req, res) => {
   req.logout((err) => {
     if (err) {
-      return res.status(500).send("Failed to log out");
+      console.error("Logout error:", err);
+      return res
+        .status(500)
+        .json({ message: "Failed to log out", error: err.message });
     }
-    (req as any).session.destroy((err) => {
+
+    req.session.destroy((err) => {
       if (err) {
-        return res.status(500).send("Failed to destroy session");
+        console.error("Session destruction error:", err);
+        return res
+          .status(500)
+          .json({ message: "Failed to destroy session", error: err.message });
       }
-      res.clearCookie("connect.sid");
+
+      res.clearCookie("connect.sid", { path: "/" });
+      res.status(200).json({ message: "Logged out successfully" });
     });
   });
 });
