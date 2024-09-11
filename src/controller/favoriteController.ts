@@ -30,6 +30,24 @@ export const getFavoriteById = async (req: Request, res: Response) => {
   }
 };
 
+//Get a favorite by customer ID
+export const getFavoriteByCustomerId = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  try {
+    const result = await pool.query(
+      "SELECT * FROM favorites WHERE customer_id = $1",
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Favorite not found" });
+    }
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching favorite:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Create a new favorite
 export const createFavorite = async (req: Request, res: Response) => {
   const { customerId, storeId } = req.body;

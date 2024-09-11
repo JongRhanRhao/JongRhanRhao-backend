@@ -13,6 +13,7 @@ import {
   updateStore,
   deleteStore,
   uploadStoreImages,
+  getUserStores,
 } from "../controller/storeController";
 import {
   getAllTables,
@@ -27,6 +28,7 @@ import {
   createFavorite,
   updateFavorite,
   deleteFavorite,
+  getFavoriteByCustomerId,
 } from "../controller/favoriteController";
 import {
   getAllReservations,
@@ -48,6 +50,7 @@ router.delete("/users/:id", deleteUser);
 // Store routes
 router.get("/stores", getAllStores);
 router.get("/stores/:id", getStoreById);
+router.get("/stores/user/:userId", getUserStores);
 router.post("/stores", createStore);
 router.put("/stores/:id", updateStore);
 router.delete("/stores/:id", deleteStore);
@@ -63,6 +66,7 @@ router.delete("/tables/:id", deleteTable);
 // Favorite routes
 router.get("/favorites", getAllFavorites);
 router.get("/favorites/:id", getFavoriteById);
+router.get("/favorites/customer/:id", getFavoriteByCustomerId);
 router.post("/favorites", createFavorite);
 router.put("/favorites/:id", updateFavorite);
 router.delete("/favorites/:id", deleteFavorite);

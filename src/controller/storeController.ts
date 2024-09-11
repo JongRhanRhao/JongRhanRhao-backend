@@ -153,6 +153,24 @@ export const updateStore = async (req: Request, res: Response) => {
   }
 };
 
+// Get all stores for a specific user (owner or staff)
+export const getUserStores = async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM stores 
+       WHERE owner_id = $1 OR staff_id = $1`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching user's stores:", err);
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
+
 // Delete a store
 export const deleteStore = async (req: Request, res: Response) => {
   const storeId = req.params.id;
