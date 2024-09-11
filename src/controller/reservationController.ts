@@ -63,6 +63,36 @@ export const getReservationByCustomerId = async (
   }
 };
 
+// Get a reservation by shop ID
+export const getReservationByShopId = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  try {
+    const result = await pool.query(
+      `SELECT 
+        r.reservation_id,
+        r.reservation_date,
+        r.reservation_time,
+        r.reservation_status,
+        r.phone_number,
+        r.customer_id,
+        u.user_name
+      FROM reservations r
+      JOIN users u ON r.customer_id = u.user_id
+      WHERE r.shop_id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching reservation:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Create a new reservation with custom reservationId format (e.g., JRR0001)
 export const createReservation = async (req: Request, res: Response) => {
   const {
