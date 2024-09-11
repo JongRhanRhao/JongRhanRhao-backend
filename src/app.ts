@@ -36,7 +36,7 @@ app.use(passport.session());
 
 // Routes
 app.use("/users/auth", auth);
-app.use("/stores/api/", jong);
+app.use("/stores/api", jong);
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req: Request, res: Response) => {
