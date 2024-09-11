@@ -11,6 +11,7 @@ import "./auth/passport";
 
 import auth from "./routes/auth";
 import jong from "./routes/jong";
+import { users } from "../db/schema";
 
 dotenv.config();
 
