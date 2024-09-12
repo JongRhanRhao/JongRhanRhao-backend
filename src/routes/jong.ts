@@ -29,6 +29,7 @@ import {
   updateFavorite,
   deleteFavorite,
   getFavoriteByCustomerId,
+  getFavoriteStatus,
 } from "../controller/favoriteController";
 import {
   getAllReservations,
@@ -37,6 +38,7 @@ import {
   updateReservation,
   deleteReservation,
   getReservationByCustomerId,
+  getReservationByShopId,
 } from "../controller/reservationController";
 const router = express.Router();
 
@@ -68,13 +70,15 @@ router.get("/favorites", getAllFavorites);
 router.get("/favorites/:id", getFavoriteById);
 router.get("/favorites/customer/:id", getFavoriteByCustomerId);
 router.post("/favorites", createFavorite);
+router.post("/favorites/status", getFavoriteStatus);
 router.put("/favorites/:id", updateFavorite);
-router.delete("/favorites/:id", deleteFavorite);
+router.post("/favorites/remove", deleteFavorite);
 
 // Reservation routes
 router.get("/reservations", getAllReservations);
 router.get("/reservations/:id", getReservationById);
 router.get("/reservations/customer/:id", getReservationByCustomerId);
+router.get("/reservations/store/:id", getReservationByShopId);
 router.post("/reservations", createReservation);
 router.put("/reservations/:id", updateReservation);
 router.delete("/reservations/:id", deleteReservation);
