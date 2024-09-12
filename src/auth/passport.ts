@@ -8,14 +8,15 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { users } from "../../db/schema";
 import { googleStrat } from "./strategies/google";
 import { facebookStrat } from "./strategies/facebook";
+import { User } from "../models/users";
 
 const debug = Debug("app:passport");
 const db = drizzle(pool);
 
 // Use the strategies
 passport.use(localStrat);
-passport.use('google', googleStrat as unknown as passport.Strategy);
-passport.use(facebookStrat)
+passport.use("google", googleStrat as unknown as passport.Strategy);
+passport.use(facebookStrat);
 
 // Serialize the user (store userId in session)
 passport.serializeUser((user: any, done) => {
@@ -25,7 +26,6 @@ passport.serializeUser((user: any, done) => {
 
 // Deserialize the user (retrieve the user from the DB by userId)
 passport.deserializeUser(async (id: string, done) => {
-  debug("@passport deserialize");
   try {
     const result = await db
       .select()
@@ -33,15 +33,25 @@ passport.deserializeUser(async (id: string, done) => {
       .where(eq(users.userId, id))
       .limit(1);
 
-    const user = result[0];
-
-    if (!user) {
+    if (result.length === 0) {
       return done(new Error("User not found"));
     }
 
-    done(null, user[0]); // Pass user object to done()
+    const user = result[0];
+
+    const userToReturn: User = {
+      userId: user.userId,
+      userName: user.userName,
+      userEmail: user.userEmail,
+      role: user.role,
+      phoneNumber: user.phoneNumber ?? "",
+      googleId: user.googleId ?? "",
+      facebookId: user.facebookId ?? "",
+    };
+
+    done(null, userToReturn);
   } catch (err) {
-    done(err); // Handle errors during deserialization
+    done(err);
   }
 });
 
