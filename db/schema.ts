@@ -54,7 +54,7 @@ export const stores = pgTable("stores", {
   ownerId: varchar("owner_id").references(() => users.userId),
   staffId: varchar("staff_id").references(() => users.userId),
   shopName: varchar("shop_name", { length: 255 }).notNull(),
-  description: varchar("description", { length: 255 }),
+  description: varchar("description", { length: 500 }),
   rating: integer("rating").default(0),
   imageUrl: varchar("image_url", { length: 255 }),
   openTimeBooking: varchar("open_timebooking", { length: 255 }).notNull(),
@@ -64,7 +64,7 @@ export const stores = pgTable("stores", {
   maxSeats: integer("max_seats").notNull(),
   currSeats: integer("curr_seats").notNull(),
   isPopular: boolean("is_popular").default(false),
-  type: (varchar("type", { length: 50 })), 
+  type: varchar("type", { length: 50 }),
 });
 
 // Reviews Table (expanded for comments and likes)
