@@ -1,11 +1,16 @@
 export interface Stores {
-    storeId: number;
-    ownerId: number;
-    staffId: number;
-    name: string;
-    openTimeBooking: string;
-    cancelReserve: string;
-    isFavorite: boolean;
-    isPopular: boolean;
-    type: string;
-  }
+  storeId: string;
+  ownerId: string;
+  staffId: string[];
+  name: string;
+  openTimeBooking: string;
+  cancelReserve: string;
+  isFavorite: boolean;
+  isPopular: boolean;
+  type: string[];
+  description?: string;
+  rating?: number;
+  imageUrl?: string[];
+  maxSeats?: number;
+  currSeats?: number;
+}

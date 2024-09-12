@@ -8,7 +8,6 @@ import {
   time,
   timestamp,
   boolean,
-  PgColumnBuilder,
 } from "drizzle-orm/pg-core";
 
 // Users Table
@@ -48,8 +47,7 @@ export const userRoles = pgTable("userroles", {
 });
 
 // Stores Table
-export const stores = pgTable("stores",
-  <Record<string,PgColumnBuilder>><unknown> {
+export const stores = pgTable("stores", {
   storeId: varchar("store_id")
     .default(sql`generate_nanoid()`)
     .primaryKey(),
@@ -66,7 +64,7 @@ export const stores = pgTable("stores",
   maxSeats: integer("max_seats").notNull(),
   currSeats: integer("curr_seats").notNull(),
   isPopular: boolean("is_popular").default(false),
-  type: Array(varchar("type", { length: 50 })), 
+  type: (varchar("type", { length: 50 })), 
 });
 
 // Reviews Table (expanded for comments and likes)
