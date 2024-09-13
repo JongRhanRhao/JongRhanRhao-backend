@@ -64,7 +64,7 @@ export const stores = pgTable("stores", {
   maxSeats: integer("max_seats").notNull(),
   currSeats: integer("curr_seats").notNull(),
   isPopular: boolean("is_popular").default(false),
-  type: varchar("type", { length: 50 }),
+  type: varchar("type", { length: 50 }).array(),
 });
 
 // Reviews Table (expanded for comments and likes)
