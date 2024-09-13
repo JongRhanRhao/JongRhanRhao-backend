@@ -75,6 +75,7 @@ export const getReservationByShopId = async (req: Request, res: Response) => {
         r.reservation_status,
         r.phone_number,
         r.customer_id,
+        r.number_of_people,
         u.user_name
       FROM reservations r
       JOIN users u ON r.customer_id = u.user_id
