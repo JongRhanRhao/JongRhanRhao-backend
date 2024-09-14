@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
-import pool from "../config/db";
+import { eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+
+import pool from "../config/db";
+import { dbClient } from "../../db/client";
+import { storeImages } from "../../db/schema";
 
 // Get all stores
 export const getAllStores = async (req: Request, res: Response) => {
@@ -160,7 +164,7 @@ export const getUserStores = async (req: Request, res: Response) => {
   try {
     const result = await pool.query(
       `SELECT * FROM stores 
-       WHERE owner_id = $1 OR staff_id = $1`,
+       WHERE $1 = ANY(owner_id) OR $1 = ANY(staff_id)`,
       [userId]
     );
 
@@ -262,5 +266,57 @@ export const uploadStoreImages = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Error in uploadStoreImages function:", err.message);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const addStoreImage = async (req: Request, res: Response) => {
+  const { storeId, images } = req.body;
+
+  if (!storeId || !Array.isArray(images) || images.length === 0) {
+    return res.status(400).json({ error: "Invalid input data" });
+  }
+  try {
+    const imageRecords = images.map(
+      (image: { original: string; thumbnail: string }) => ({
+        storeId,
+        original: image.original,
+        thumbnail: image.thumbnail,
+      })
+    );
+    await dbClient.insert(storeImages).values(imageRecords);
+    res.status(201).json({ message: "Images added successfully" });
+  } catch (error) {
+    console.error("Error adding images:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while adding the images" });
+  }
+};
+
+export const getStoreImages = async (req: Request, res: Response) => {
+  const storeId = req.params.id;
+
+  if (!storeId) {
+    return res.status(400).json({ error: "Store ID is required" });
+  }
+
+  try {
+    const images = await dbClient
+      .select()
+      .from(storeImages)
+      .where(eq(storeImages.storeId, storeId));
+
+    if (images.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No images found for this store" });
+    }
+
+    res.json(images);
+  } catch (error) {
+    console.error("Error fetching store images:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching the images" });
   }
 };
