@@ -14,6 +14,8 @@ import {
   deleteStore,
   uploadStoreImages,
   getUserStores,
+  addStoreImage,
+  getStoreImages,
 } from "../controller/storeController";
 import {
   getAllTables,
@@ -39,6 +41,7 @@ import {
   deleteReservation,
   getReservationByCustomerId,
   getReservationByShopId,
+  updateReservationStatus,
 } from "../controller/reservationController";
 const router = express.Router();
 
@@ -57,6 +60,8 @@ router.post("/stores", createStore);
 router.put("/stores/:id", updateStore);
 router.delete("/stores/:id", deleteStore);
 router.post("/stores/:id/upload-image", uploadStoreImages);
+router.post("/stores/add-store-images", addStoreImage);
+router.get("/stores/:id/images", getStoreImages);
 
 // Table routes
 router.get("/tables", getAllTables);
@@ -81,6 +86,7 @@ router.get("/reservations/customer/:id", getReservationByCustomerId);
 router.get("/reservations/store/:id", getReservationByShopId);
 router.post("/reservations", createReservation);
 router.put("/reservations/:id", updateReservation);
+router.put("/reservations/status/:id", updateReservationStatus);
 router.delete("/reservations/:id", deleteReservation);
 
 export default router;
