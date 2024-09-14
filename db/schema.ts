@@ -1,4 +1,4 @@
-import { is, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 import {
   pgTable,
@@ -51,8 +51,12 @@ export const stores = pgTable("stores", {
   storeId: varchar("store_id")
     .default(sql`generate_nanoid()`)
     .primaryKey(),
-  ownerId: varchar("owner_id").references(() => users.userId),
-  staffId: varchar("staff_id").references(() => users.userId),
+  ownerId: varchar("owner_id")
+    .references(() => users.userId)
+    .array(),
+  staffId: varchar("staff_id")
+    .references(() => users.userId)
+    .array(),
   shopName: varchar("shop_name", { length: 255 }).notNull(),
   description: varchar("description", { length: 500 }),
   rating: integer("rating").default(0),
@@ -81,9 +85,9 @@ export const reviewsTable = pgTable("reviews", {
   rating: integer("rating").notNull(),
   reviewText: varchar("review_text", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  likes: integer("likes").default(0), // Add likes field
-  replies: integer("replies").default(0), // Add replies field
-  avatarUrl: varchar("avatar_url", { length: 255 }), // Add avatar field
+  likes: integer("likes").default(0),
+  replies: integer("replies").default(0),
+  avatarUrl: varchar("avatar_url", { length: 255 }),
 });
 
 // StoreImages Table
@@ -92,9 +96,10 @@ export const storeImages = pgTable("store_images", {
     .default(sql`generate_nanoid()`)
     .primaryKey(),
   storeId: varchar("store_id")
-    .references(() => stores.storeId)
-    .notNull(),
-  imageUrl: varchar("image_url", { length: 255 }).notNull(),
+    .notNull()
+    .references(() => stores.storeId),
+  original: varchar("original", { length: 255 }).notNull(),
+  thumbnail: varchar("thumbnail", { length: 255 }).notNull(),
 });
 
 // Staff Table
