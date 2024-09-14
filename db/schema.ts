@@ -129,6 +129,7 @@ export const reservations = pgTable("reservations", {
   reservationStatus: varchar("reservation_status", { length: 50 }).notNull(),
   numberOfPeople: integer("number_of_people").notNull(),
   phoneNumber: varchar("phone_number", { length: 15 }),
+  note: varchar("note", { length: 255 }),
 });
 
 // Favorites Table
