@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 
 import pool from "../config/db";
 import { dbClient } from "../../db/client";
-import { storeImages } from "../../db/schema";
+import { storeImages, stores, users } from "../../db/schema";
 
 // Get all stores
 export const getAllStores = async (req: Request, res: Response) => {
@@ -320,3 +320,81 @@ export const getStoreImages = async (req: Request, res: Response) => {
       .json({ error: "An error occurred while fetching the images" });
   }
 };
+
+export const getStoreStaff = async (req: Request, res: Response) => {
+  const storeId = req.params.id;
+
+  if (!storeId) {
+    return res.status(400).json({ error: "Store ID is required" });
+  }
+
+  try {
+    const store = await dbClient
+      .select()
+      .from(stores)
+      .where(eq(stores.storeId, storeId));
+
+    if (store.length === 0) {
+      return res.status(404).json({ message: "Store not found" });
+    }
+
+    if (!store[0].staffId || store[0].staffId.length === 0) {
+      return res.status(404).json({ message: "No staff found for this store" });
+    }
+
+    const staff = await dbClient
+      .select()
+      .from(users)
+      .where(inArray(users.userId, store[0].staffId));
+
+    if (staff.length === 0) {
+      return res.status(404).json({ message: "No staff found for this store" });
+    }
+
+    res.json(staff);
+  } catch (error) {
+    console.error("Error fetching store staff:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching the store staff" });
+  }
+};
+
+export const deleteStoreStaff = async (req: Request, res: Response) => {
+  const { storeId, staffId } = req.body;
+
+  if (!storeId || !staffId) {
+    return res.status(400).json({ error: "Store ID and staff ID are required" });
+  }
+
+  try {
+    const store = await dbClient
+      .select()
+      .from(stores)
+      .where(eq(stores.storeId, storeId));
+
+    if (store.length === 0) {
+      return res.status(404).json({ message: "Store not found" });
+    }
+
+    if (!store[0].staffId || store[0].staffId.length === 0) {
+      return res.status(404).json({ message: "No staff found for this store" });
+    }
+
+    const updatedStaff = store[0].staffId.filter(
+      (id: string) => id !== staffId
+    );
+
+    await dbClient
+      .update(stores)
+      .set({ staffId: updatedStaff })
+      .where(eq(stores.storeId, storeId));
+
+    res.json({ message: "Staff removed successfully" });
+  } catch (error) {
+    console.error("Error removing staff:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while removing the staff" });
+  }
+}
