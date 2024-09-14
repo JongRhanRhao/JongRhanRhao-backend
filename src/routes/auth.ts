@@ -53,7 +53,7 @@ router.get("/me", (req: Request, res: Response) => {
       userId: req.user?.userId,
       userName: req.user?.userName,
       userEmail: req.user?.userEmail,
-      userRole: req.user?.role,
+      role: req.user?.role,
       phoneNumber: req.user?.phoneNumber,
       googleId: req.user?.googleId,
       facebookId: req.user?.facebookId,
