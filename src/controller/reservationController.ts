@@ -104,6 +104,7 @@ export const createReservation = async (req: Request, res: Response) => {
     reservationTime,
     reservationStatus,
     phoneNumber,
+    note,
   } = req.body;
 
   try {
@@ -123,8 +124,8 @@ export const createReservation = async (req: Request, res: Response) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO reservations (reservation_id, customer_id, shop_id, number_of_people, reservation_date, reservation_time, reservation_status, phone_number)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      `INSERT INTO reservations (reservation_id, customer_id, shop_id, number_of_people, reservation_date, reservation_time, reservation_status, note, phone_number)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
       [
         newReservationId,
         customerId,
@@ -133,6 +134,7 @@ export const createReservation = async (req: Request, res: Response) => {
         reservationDate,
         reservationTime,
         reservationStatus,
+        note,
         phoneNumber,
       ]
     );
