@@ -42,8 +42,10 @@ export const register = async (req: Request, res: Response) => {
       process.env.JWT_SECRET || "enviably-utensil-mountain",
       { expiresIn: "1h" }
     );
-
-    res.status(201).json({ token });
+    res.json({
+      message: "Login successful",
+      user: newUser,
+    });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
