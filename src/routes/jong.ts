@@ -16,6 +16,8 @@ import {
   getUserStores,
   addStoreImage,
   getStoreImages,
+  getStoreStaff,
+  deleteStoreStaff,
 } from "../controller/storeController";
 import {
   getAllTables,
@@ -62,6 +64,8 @@ router.delete("/stores/:id", deleteStore);
 router.post("/stores/:id/upload-image", uploadStoreImages);
 router.post("/stores/add-store-images", addStoreImage);
 router.get("/stores/:id/images", getStoreImages);
+router.get("/stores/:id/staff", getStoreStaff);
+router.delete("/stores/:id/staff", deleteStoreStaff);
 
 // Table routes
 router.get("/tables", getAllTables);
