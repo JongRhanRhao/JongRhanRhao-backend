@@ -23,7 +23,7 @@ export const googleStrat = new GoogleStrategy(
       if (existingUser.length > 0) {
         return cb(null, existingUser[0]);
       }
-
+      const profilePicture = profile.photos?.[0]?.value || null;
       const newUser = await dbClient
         .insert(users)
         .values({
@@ -31,6 +31,7 @@ export const googleStrat = new GoogleStrategy(
           userEmail: profile.emails[0].value,
           googleId: profile.id,
           phoneNumber: profile.phone,
+          profilePicture,
           role: "user",
         })
         .returning();
