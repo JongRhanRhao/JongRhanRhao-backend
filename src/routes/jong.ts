@@ -1,12 +1,5 @@
 import express from "express";
 import {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser,
-} from "../controller/userController";
-import {
   getAllStores,
   getStoreById,
   createStore,
@@ -19,13 +12,6 @@ import {
   getStoreStaff,
   deleteStoreStaff,
 } from "../controller/storeController";
-import {
-  getAllTables,
-  getTableById,
-  createTable,
-  updateTable,
-  deleteTable,
-} from "../controller/tableController";
 import {
   getAllFavorites,
   getFavoriteById,
@@ -47,13 +33,6 @@ import {
 } from "../controller/reservationController";
 const router = express.Router();
 
-// User routes
-router.get("/users", getAllUsers);
-router.get("/users/:id", getUserById);
-router.post("/users", createUser);
-router.put("/users/:id", updateUser);
-router.delete("/users/:id", deleteUser);
-
 // Store routes
 router.get("/stores", getAllStores);
 router.get("/stores/:id", getStoreById);
@@ -66,13 +45,6 @@ router.post("/stores/add-store-images", addStoreImage);
 router.get("/stores/:id/images", getStoreImages);
 router.get("/stores/:id/staff", getStoreStaff);
 router.delete("/stores/:id/staff", deleteStoreStaff);
-
-// Table routes
-router.get("/tables", getAllTables);
-router.get("/tables/:id", getTableById);
-router.post("/tables", createTable);
-router.put("/tables/:id", updateTable);
-router.delete("/tables/:id", deleteTable);
 
 // Favorite routes
 router.get("/favorites", getAllFavorites);
