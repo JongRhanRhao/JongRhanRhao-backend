@@ -39,7 +39,11 @@ export const getStoreById = async (req: Request, res: Response) => {
   }
 };
 
-// Create a new store
+// create a store
+const generateStoreId = (shopName: string): string => {
+  return shopName.trim().toUpperCase().replace(/\s+/g, "-");
+};
+
 export const createStore = async (req: Request, res: Response) => {
   const {
     ownerId,
@@ -58,6 +62,9 @@ export const createStore = async (req: Request, res: Response) => {
     description,
   } = req.body;
 
+  const storeId = generateStoreId(shopName);
+  const now = new Date();
+
   const existingStoreCheck = await pool.query(
     "SELECT * FROM stores WHERE shop_name = $1 AND owner_id = $2",
     [shopName, ownerId]
@@ -69,10 +76,11 @@ export const createStore = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, max_seats, curr_seats, is_popular, type) 
-       VALUES (generate_nanoid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
+      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, max_seats, curr_seats, is_popular, type, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
        RETURNING *`,
       [
+        storeId,
         ownerId,
         staffId,
         shopName,
@@ -87,6 +95,8 @@ export const createStore = async (req: Request, res: Response) => {
         currSeats,
         isPopular,
         type,
+        now,
+        now,
       ]
     );
     res.status(201).json(result.rows[0]);
@@ -364,7 +374,9 @@ export const deleteStoreStaff = async (req: Request, res: Response) => {
   const { storeId, staffId } = req.body;
 
   if (!storeId || !staffId) {
-    return res.status(400).json({ error: "Store ID and staff ID are required" });
+    return res
+      .status(400)
+      .json({ error: "Store ID and staff ID are required" });
   }
 
   try {
@@ -397,4 +409,4 @@ export const deleteStoreStaff = async (req: Request, res: Response) => {
       .status(500)
       .json({ error: "An error occurred while removing the staff" });
   }
-}
+};
