@@ -12,7 +12,7 @@ export const googleStrat = new GoogleStrategy(
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/users/auth/google/callback`,
   },
-  async function (accessToken, refreshToken, profile, cb) {
+  async function (accessToken, refreshToken, profile: any, cb: any) {
     try {
       const existingUser = await dbClient
         .select()
