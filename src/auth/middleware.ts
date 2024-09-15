@@ -1,7 +1,6 @@
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
-import { app } from "../app";
 import bodyParser from "body-parser";
 import { sessionInstance } from "./session";
 
