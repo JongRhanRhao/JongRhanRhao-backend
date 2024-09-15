@@ -48,15 +48,17 @@ router.get("/sessions", (req, res) => {
 });
 
 router.get("/me", (req: Request, res: Response) => {
+  console.log("Authenticated User:", req.user);
   if (req.isAuthenticated()) {
     res.status(200).json({
       userId: req.user?.userId,
       userName: req.user?.userName,
       userEmail: req.user?.userEmail,
       role: req.user?.role,
-      phoneNumber: req.user?.phoneNumber,
       googleId: req.user?.googleId,
       facebookId: req.user?.facebookId,
+      phoneNumber: req.user?.phoneNumber,
+      profilePicture: req.user?.profilePicture,
     });
   } else {
     res.status(401).json({ message: "Unauthorized" });
