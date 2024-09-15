@@ -4,6 +4,7 @@ export interface User {
   userEmail: string;
   role: string;
   phoneNumber: string;
+  profilePicture: string;
   googleId: string;
   facebookId: string;
 }
