@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import passport from "passport";
+import "./auth/passport";
 
 import { NODE_ENV } from "./utils/env";
 import auth from "./routes/auth";
