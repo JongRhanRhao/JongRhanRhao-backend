@@ -5,13 +5,15 @@ import dotenv from "dotenv";
 import passport from "passport";
 import helmet from "helmet";
 
+import { createServer } from "http";
+import { Server } from "socket.io";
+
 import { NODE_ENV } from "./utils/env";
 import { sessionInstance } from "./auth/session";
 import "./auth/passport";
 
 import auth from "./routes/auth";
 import jong from "./routes/jong";
-import { users } from "../db/schema";
 
 dotenv.config();
 
@@ -29,6 +31,34 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionInstance);
 
+// socket
+const server = createServer(app);
+
+export const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  // console.log("A user connected");
+
+  // socket.on("disconnect", () => {
+  //   console.log("User disconnected");
+  // });
+
+  socket.on("store_update", (data) => {
+    console.log(`Store updated: ${data.storeId}`);
+    io.emit("store_update", { storeId: data.storeId });
+  });
+
+  socket.on("reservation_update", (data) => {
+    console.log(`Reservation updated: ${data.reservationId}`);
+    io.emit("reservation_update", { reservationId: data.reservationId });
+  });
+});
+
 // Session
 if (NODE_ENV === "production") app.set("trust proxy", 1);
 
@@ -42,4 +72,11 @@ app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "JongRhanRhao backend is up and running!" });
+});
+
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(
+    `🍺 JongRhanRhao server is running on ${process.env.SERVER_URL}:${process.env.SERVER_PORT}`
+  );
 });
