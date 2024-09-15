@@ -20,6 +20,7 @@ export const users = pgTable("users", {
   password: varchar("password", { length: 255 }),
   role: varchar("role", { length: 20 }).notNull(),
   phoneNumber: varchar("phone_number", { length: 15 }),
+  profilePicture: varchar("profile_picture", { length: 255 }),
   googleId: varchar("google_id", { length: 255 }),
   facebookId: varchar("facebook_id", { length: 255 }),
 });
