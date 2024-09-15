@@ -13,18 +13,15 @@ import { User } from "../models/users";
 const debug = Debug("app:passport");
 const db = drizzle(pool);
 
-// Use the strategies
 passport.use(localStrat);
 passport.use("google", googleStrat as unknown as passport.Strategy);
 passport.use(facebookStrat);
 
-// Serialize the user (store userId in session)
 passport.serializeUser((user: any, done) => {
   debug("@passport serialize");
-  done(null, user.userId); // Store only userId in session
+  done(null, user.userId); 
 });
 
-// Deserialize the user (retrieve the user from the DB by userId)
 passport.deserializeUser(async (id: string, done) => {
   try {
     const result = await db
@@ -45,6 +42,7 @@ passport.deserializeUser(async (id: string, done) => {
       userEmail: user.userEmail,
       role: user.role,
       phoneNumber: user.phoneNumber ?? "",
+      profilePicture: user.profilePicture ?? "",
       googleId: user.googleId ?? "",
       facebookId: user.facebookId ?? "",
     };
