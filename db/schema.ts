@@ -23,6 +23,8 @@ export const users = pgTable("users", {
   profilePicture: varchar("profile_picture", { length: 255 }),
   googleId: varchar("google_id", { length: 255 }),
   facebookId: varchar("facebook_id", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Roles Table
@@ -49,9 +51,7 @@ export const userRoles = pgTable("userroles", {
 
 // Stores Table
 export const stores = pgTable("stores", {
-  storeId: varchar("store_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  storeId: varchar("store_id").primaryKey(),
   ownerId: varchar("owner_id")
     .references(() => users.userId)
     .array(),
@@ -70,6 +70,8 @@ export const stores = pgTable("stores", {
   currSeats: integer("curr_seats").notNull(),
   isPopular: boolean("is_popular").default(false),
   type: varchar("type", { length: 50 }).array(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Reviews Table (expanded for comments and likes)
