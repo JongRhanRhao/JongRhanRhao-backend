@@ -25,7 +25,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
-    res.redirect("http://localhost:5173");
+    res.redirect(process.env.CLIENT_URL || "http://localhost:5173");
   }
 );
 router.get(
@@ -36,7 +36,7 @@ router.get(
   "/facebook/callback",
   passport.authenticate("facebook", { failureRedirect: "/login" }),
   (req, res) => {
-    res.redirect("http://localhost:5173");
+    res.redirect(process.env.CLIENT_URL || "http://localhost:5173");
   }
 );
 router.get("/sessions", (req, res) => {
