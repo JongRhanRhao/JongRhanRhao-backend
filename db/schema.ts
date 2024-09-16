@@ -72,6 +72,8 @@ export const stores = pgTable("stores", {
   type: varchar("type", { length: 50 }).array(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  facebookLink: varchar("facebook_link", { length: 255 }),
+  googleMapLink: varchar("google_map_link", { length: 255 }),
 });
 
 // Reviews Table (expanded for comments and likes)
