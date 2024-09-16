@@ -13,4 +13,6 @@ export interface Stores {
   imageUrl?: string[];
   maxSeats?: number;
   currSeats?: number;
+  googleMapLink?: string;
+  faceBookLink?: string;
 }
