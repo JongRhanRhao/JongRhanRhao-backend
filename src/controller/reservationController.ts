@@ -45,6 +45,7 @@ export const getReservationByCustomerId = async (
         r.reservation_status,
         r.phone_number,
         r.shop_id,
+        r.note,
         s.shop_name
       FROM reservations r
       JOIN stores s ON r.shop_id = s.store_id
@@ -76,6 +77,7 @@ export const getReservationByShopId = async (req: Request, res: Response) => {
         r.phone_number,
         r.customer_id,
         r.number_of_people,
+        r.note,
         u.user_name
       FROM reservations r
       JOIN users u ON r.customer_id = u.user_id
@@ -205,7 +207,7 @@ export const deleteReservation = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Reservation not found" });
     }
 
-    res.status(204).json({});
+    res.status(204).json({ message: "Reservation deleted successfully" });
   } catch (err) {
     console.error("Error deleting reservation:", err);
     res.status(500).json({ error: err.message });
