@@ -20,7 +20,7 @@ export default function setupMiddlewares(app: any) {
       credentials: true,
     })
   );
-  app.use(limiter);
+  // app.use(limiter);
   app.use(mongoSanitize()); // Prevent NoSQL injections
   app.use(xss()); // Prevent XSS attacks
   app.use(hpp()); // Prevent HTTP Parameter Pollution attacks
