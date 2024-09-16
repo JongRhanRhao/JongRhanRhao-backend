@@ -60,6 +60,8 @@ export const createStore = async (req: Request, res: Response) => {
     type,
     imageUrl,
     description,
+    facebookLink,
+    googleMapLink,
   } = req.body;
 
   const storeId = generateStoreId(shopName);
@@ -76,8 +78,8 @@ export const createStore = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, max_seats, curr_seats, is_popular, type, created_at, updated_at) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
+      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, max_seats, curr_seats, is_popular, type, created_at, updated_at, facebook_link, google_map_link) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) 
        RETURNING *`,
       [
         storeId,
@@ -97,6 +99,8 @@ export const createStore = async (req: Request, res: Response) => {
         type,
         now,
         now,
+        facebookLink,
+        googleMapLink,
       ]
     );
     res.status(201).json(result.rows[0]);
