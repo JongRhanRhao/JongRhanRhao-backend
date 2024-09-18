@@ -1,12 +1,18 @@
 import { Request, Response } from "express";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, and } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 
 import pool from "../config/db";
-import { dbClient } from "../../db/client";
-import { storeImages, stores, users } from "../../db/schema";
+import { dbClient as db } from "../../db/client";
+import {
+  storeAvailability,
+  storeImages,
+  stores,
+  storeWeeklySchedule,
+  users,
+} from "../../db/schema";
 
 // Get all stores
 export const getAllStores = async (req: Request, res: Response) => {
@@ -62,6 +68,7 @@ export const createStore = async (req: Request, res: Response) => {
     description,
     facebookLink,
     googleMapLink,
+    defaultSlots,
   } = req.body;
 
   const storeId = generateStoreId(shopName);
@@ -78,8 +85,8 @@ export const createStore = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, max_seats, curr_seats, is_popular, type, created_at, updated_at, facebook_link, google_map_link) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) 
+      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, max_seats, curr_seats, is_popular, type, created_at, updated_at, facebook_link, google_map_link, default_slots) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) 
        RETURNING *`,
       [
         storeId,
@@ -101,6 +108,7 @@ export const createStore = async (req: Request, res: Response) => {
         now,
         facebookLink,
         googleMapLink,
+        defaultSlots,
       ]
     );
     res.status(201).json(result.rows[0]);
@@ -128,6 +136,9 @@ export const updateStore = async (req: Request, res: Response) => {
     description,
     imageUrl,
     rating,
+    googleMapLink,
+    facebookLink,
+    defaultSlots,
   } = req.body;
 
   try {
@@ -142,9 +153,25 @@ export const updateStore = async (req: Request, res: Response) => {
 
     const updatedStoreResult = await pool.query(
       `UPDATE stores 
-      SET shop_name = $1, open_timebooking = $2, cancel_reserve = $3, description = $4 , owner_id = $5, staff_id = $6, address = $7, status = $8, max_seats = $9, curr_seats = $10, is_popular = $11, type = $12, image_url = $13, rating = $14 
-      WHERE store_id = $15
-      RETURNING *`,
+       SET shop_name = $1, 
+           open_timebooking = $2, 
+           cancel_reserve = $3, 
+           description = $4, 
+           owner_id = $5, 
+           staff_id = $6, 
+           address = $7, 
+           status = $8, 
+           max_seats = $9, 
+           curr_seats = $10, 
+           is_popular = $11, 
+           type = $12, 
+           image_url = $13, 
+           rating = $14, 
+           facebook_link = $15, 
+           google_map_link = $16, 
+           default_slots = $17
+       WHERE store_id = $18
+       RETURNING *`,
       [
         shopName,
         openTimeBooking,
@@ -160,10 +187,12 @@ export const updateStore = async (req: Request, res: Response) => {
         type,
         imageUrl,
         rating,
+        facebookLink,
+        googleMapLink,
+        defaultSlots,
         storeId,
       ]
     );
-
     res.json(updatedStoreResult.rows[0]);
   } catch (err) {
     console.error("Error updating store:", err.message);
@@ -297,7 +326,7 @@ export const addStoreImage = async (req: Request, res: Response) => {
         thumbnail: image.thumbnail,
       })
     );
-    await dbClient.insert(storeImages).values(imageRecords);
+    await db.insert(storeImages).values(imageRecords);
     res.status(201).json({ message: "Images added successfully" });
   } catch (error) {
     console.error("Error adding images:", error);
@@ -315,7 +344,7 @@ export const getStoreImages = async (req: Request, res: Response) => {
   }
 
   try {
-    const images = await dbClient
+    const images = await db
       .select()
       .from(storeImages)
       .where(eq(storeImages.storeId, storeId));
@@ -343,7 +372,7 @@ export const getStoreStaff = async (req: Request, res: Response) => {
   }
 
   try {
-    const store = await dbClient
+    const store = await db
       .select()
       .from(stores)
       .where(eq(stores.storeId, storeId));
@@ -356,7 +385,7 @@ export const getStoreStaff = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "No staff found for this store" });
     }
 
-    const staff = await dbClient
+    const staff = await db
       .select()
       .from(users)
       .where(inArray(users.userId, store[0].staffId));
@@ -384,7 +413,7 @@ export const deleteStoreStaff = async (req: Request, res: Response) => {
   }
 
   try {
-    const store = await dbClient
+    const store = await db
       .select()
       .from(stores)
       .where(eq(stores.storeId, storeId));
@@ -401,7 +430,7 @@ export const deleteStoreStaff = async (req: Request, res: Response) => {
       (id: string) => id !== staffId
     );
 
-    await dbClient
+    await db
       .update(stores)
       .set({ staffId: updatedStaff })
       .where(eq(stores.storeId, storeId));
@@ -412,5 +441,145 @@ export const deleteStoreStaff = async (req: Request, res: Response) => {
     res
       .status(500)
       .json({ error: "An error occurred while removing the staff" });
+  }
+};
+
+// Store Availability Controller
+
+// Create Store Availability
+export const createStoreAvailability = async (req, res) => {
+  try {
+    const { storeId, date, availableSlots } = req.body;
+
+    const result = await db.insert(storeAvailability).values({
+      storeId,
+      date,
+      availableSlots,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    res.status(201).json({ message: "Store availability created", result });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error creating store availability", error });
+  }
+};
+
+// Read Store Availability by storeId and date
+
+interface AvailableSlot {
+  time: string;
+  availableSeats: number;
+}
+
+interface Store {
+  defaultSlots: AvailableSlot[];
+}
+
+// Function to get store availability
+export async function getStoreAvailability(
+  storeId: string,
+  date: string
+): Promise<AvailableSlot[]> {
+  const selectedDate = new Date(date);
+  const dayOfWeek = selectedDate.getDay();
+
+  try {
+    // 1. Check if there's custom availability for this specific date
+    const customAvailability = await db
+      .select()
+      .from(storeAvailability)
+      .where(
+        and(
+          eq(storeAvailability.storeId, storeId),
+          eq(storeAvailability.date, selectedDate.toISOString().split("T")[0])
+        )
+      )
+      .execute();
+
+    if (customAvailability.length) {
+      return customAvailability[0].availableSlots as AvailableSlot[]; // Return custom availability
+    }
+
+    // 2. If no custom availability, fall back to weekly schedule
+    const weeklyAvailability = await db
+      .select()
+      .from(storeWeeklySchedule)
+      .where(
+        and(
+          eq(storeWeeklySchedule.storeId, storeId),
+          eq(storeWeeklySchedule.dayOfWeek, dayOfWeek)
+        )
+      )
+      .execute();
+
+    if (weeklyAvailability.length) {
+      return weeklyAvailability[0].availableSlots as AvailableSlot[]; // Return weekly availability
+    }
+
+    // 3. If no weekly availability, fall back to default slots
+    const store = await db
+      .select()
+      .from(stores)
+      .where(eq(stores.storeId, storeId))
+      .execute();
+
+    if (store.length) {
+      return store[0].defaultSlots as AvailableSlot[]; // Return default slots
+    }
+
+    throw new Error("Store availability not found");
+  } catch (error) {
+    throw new Error(`Error fetching store availability: ${error.message}`);
+  }
+}
+
+// Update Store Availability
+export const updateStoreAvailability = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { availableSlots } = req.body;
+
+    const result = await db
+      .update(storeAvailability)
+      .set({ availableSlots, updatedAt: new Date() })
+      .where(eq(storeAvailability.id, id))
+      .execute();
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Availability not found" });
+    }
+
+    res.json({ message: "Store availability updated", result });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating store availability",
+      error: error.message,
+    });
+  }
+};
+
+// Delete Store Availability
+export const deleteStoreAvailability = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await db
+      .delete(storeAvailability)
+      .where(eq(storeAvailability.id, id))
+      .execute();
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Availability not found" });
+    }
+
+    res.json({ message: "Store availability deleted" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting store availability",
+      error: error.message,
+    });
   }
 };
