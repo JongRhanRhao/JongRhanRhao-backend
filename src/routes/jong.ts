@@ -11,6 +11,10 @@ import {
   getStoreImages,
   getStoreStaff,
   deleteStoreStaff,
+  getStoreAvailability,
+  createStoreAvailability,
+  updateStoreAvailability,
+  deleteStoreAvailability,
 } from "../controller/storeController";
 import {
   getAllFavorites,
@@ -45,6 +49,21 @@ router.post("/stores/add-store-images", addStoreImage);
 router.get("/stores/:id/images", getStoreImages);
 router.get("/stores/:id/staff", getStoreStaff);
 router.delete("/stores/:id/staff", deleteStoreStaff);
+
+// Store Availibility routes
+router.get("/stores/available/:storeId/:date", async (req, res) => {
+  const { storeId, date } = req.params;
+
+  try {
+    const availability = await getStoreAvailability(storeId, date);
+    res.json(availability);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+router.post("/stores/available", createStoreAvailability);
+router.put("/stores/available/:id", updateStoreAvailability);
+router.delete("/stores/available/:id", deleteStoreAvailability);
 
 // Favorite routes
 router.get("/favorites", getAllFavorites);
