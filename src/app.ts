@@ -6,6 +6,7 @@ import "./auth/passport";
 import { NODE_ENV } from "./utils/env";
 import auth from "./routes/auth";
 import jong from "./routes/jong";
+import user from "./routes/user";
 import setupMiddlewares from "./auth/middleware";
 
 dotenv.config();
@@ -20,6 +21,7 @@ app.use(passport.session());
 
 // Routes
 app.use("/users/auth", auth);
+app.use("/users", user);
 app.use("/stores/api", jong);
 app.use("/uploads", express.static("uploads"));
 
