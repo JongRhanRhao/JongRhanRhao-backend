@@ -5,6 +5,7 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
+    "types": ["node", "express", "multer"],
     "baseUrl": "./",
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "paths": {
