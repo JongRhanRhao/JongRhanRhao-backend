@@ -2,7 +2,6 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { sessionInstance } from "./session";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
@@ -41,5 +40,4 @@ export default function setupMiddlewares(app: any) {
   );
   app.use(bodyParser.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use(sessionInstance);
 }
