@@ -35,6 +35,13 @@ import {
   getReservationByShopId,
   updateReservationStatus,
 } from "../controller/reservationController";
+import {
+  createReview,
+  deleteReview,
+  getReviewsByShop,
+  updateReview,
+} from "../controller/reviewController";
+
 const router = express.Router();
 
 // Store routes
@@ -83,5 +90,11 @@ router.post("/reservations", createReservation);
 router.put("/reservations/:id", updateReservation);
 router.put("/reservations/status/:id", updateReservationStatus);
 router.delete("/reservations/:id", deleteReservation);
+
+// Review routes
+router.post("/reviews", createReview);
+router.get("/reviews/:shopId", getReviewsByShop);
+router.put("/reviews/:reviewId", updateReview);
+router.delete("/reviews/:reviewId", deleteReview);
 
 export default router;
