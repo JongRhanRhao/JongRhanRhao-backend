@@ -113,8 +113,6 @@ export const reviewsTable = pgTable("reviews", {
   rating: integer("rating").notNull(),
   reviewText: varchar("review_text", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  likes: integer("likes").default(0),
-  replies: integer("replies").default(0),
   avatarUrl: varchar("avatar_url", { length: 255 }),
 });
 
@@ -126,8 +124,20 @@ export const storeImages = pgTable("store_images", {
   storeId: varchar("store_id")
     .notNull()
     .references(() => stores.storeId),
-  original: varchar("original", { length: 255 }).notNull(),
-  thumbnail: varchar("thumbnail", { length: 255 }).notNull(),
+  original: varchar("original", { length: 255 }),
+  thumbnail: varchar("thumbnail", { length: 255 }),
+});
+
+// UserProfileImages Table
+export const userProfileImages = pgTable("user_profile_picture", {
+  imageId: varchar("image_id")
+    .default(sql`generate_nanoid()`)
+    .primaryKey(),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.userId),
+  original: varchar("original", { length: 255 }),
+  thumbnail: varchar("thumbnail", { length: 255 }),
 });
 
 // Staff Table
