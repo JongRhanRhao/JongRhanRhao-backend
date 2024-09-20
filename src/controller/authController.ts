@@ -34,6 +34,8 @@ export const register = async (req: Request, res: Response) => {
         password: hashedPassword,
         role,
         phoneNumber: phone_number,
+        profilePicture:
+          "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png",
       })
       .returning();
 
