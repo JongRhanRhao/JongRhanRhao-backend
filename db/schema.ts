@@ -25,6 +25,7 @@ export const users = pgTable("users", {
   profilePicture: varchar("profile_picture", { length: 255 }),
   googleId: varchar("google_id", { length: 255 }),
   facebookId: varchar("facebook_id", { length: 255 }),
+  birthYear: integer("birthYear").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -63,6 +64,7 @@ export const stores = pgTable("stores", {
   shopName: varchar("shop_name", { length: 255 }).notNull(),
   description: varchar("description", { length: 500 }),
   rating: integer("rating").default(0),
+  ageRange: varchar("age_range", { length: 50 }),
   imageUrl: varchar("image_url", { length: 255 }),
   openTimeBooking: varchar("open_timebooking", { length: 255 }).notNull(),
   cancelReserve: varchar("cancel_reserve", { length: 255 }).notNull(),
