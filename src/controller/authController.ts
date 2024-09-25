@@ -11,7 +11,8 @@ dotenv.config();
 const router = express.Router();
 
 export const register = async (req: Request, res: Response) => {
-  const { user_name, email, password, role, phone_number } = req.body;
+  const { user_name, email, password, role, phone_number, birthYear } =
+    req.body;
 
   try {
     const existingUser = await dbClient
@@ -34,6 +35,7 @@ export const register = async (req: Request, res: Response) => {
         password: hashedPassword,
         role,
         phoneNumber: phone_number,
+        birthYear,
         profilePicture:
           "https://cdn.pixabay.com/photo/2018/11/13/21/43/avatar-3814049_640.png",
       })
