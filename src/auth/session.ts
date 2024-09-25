@@ -5,10 +5,11 @@ export const sessionInstance = session({
   secret: process.env.SESSION_SECRET || "tanned-catchable-spool",
   resave: false,
   saveUninitialized: false,
+  rolling: true,
   cookie: {
     httpOnly: true,
-    secure: NODE_ENV === "production" ? true : false,
-    maxAge: 1000 * 60 * 60 * 24,
-    sameSite: "strict",
+    secure: NODE_ENV === "production",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    sameSite: "lax",
   },
 });
