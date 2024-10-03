@@ -1,18 +1,15 @@
 import { Request, Response } from "express";
-import { eq, inArray, and } from "drizzle-orm";
+import { eq, inArray, and, sql } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import sharp from "sharp";
+import { fileURLToPath } from "url";
+import { format } from "date-fns";
 
 import pool from "../config/db";
 import { dbClient as db } from "../../db/client";
-import {
-  storeAvailability,
-  storeImages,
-  stores,
-  storeWeeklySchedule,
-  users,
-} from "../../db/schema";
+import { storeAvailability, storeImages, stores, users } from "../../db/schema";
 
 // Get all stores
 export const getAllStores = async (req: Request, res: Response) => {
@@ -60,15 +57,14 @@ export const createStore = async (req: Request, res: Response) => {
     address,
     status,
     rating,
-    maxSeats,
-    currSeats,
     isPopular,
     type,
     imageUrl,
     description,
     facebookLink,
     googleMapLink,
-    defaultSlots,
+    defaultSeats,
+    ageRange,
   } = req.body;
 
   const storeId = generateStoreId(shopName);
@@ -85,8 +81,8 @@ export const createStore = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, max_seats, curr_seats, is_popular, type, created_at, updated_at, facebook_link, google_map_link, default_slots) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) 
+      `INSERT INTO stores (store_id, owner_id, staff_id, shop_name, description, image_url, open_timebooking, cancel_reserve, address, status, rating, is_popular, type, created_at, updated_at, facebook_link, google_map_link, default_seats, age_range) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) 
        RETURNING *`,
       [
         storeId,
@@ -100,15 +96,14 @@ export const createStore = async (req: Request, res: Response) => {
         address,
         status,
         rating,
-        maxSeats,
-        currSeats,
         isPopular,
         type,
         now,
         now,
         facebookLink,
         googleMapLink,
-        defaultSlots,
+        defaultSeats,
+        ageRange,
       ]
     );
     res.status(201).json(result.rows[0]);
@@ -129,8 +124,6 @@ export const updateStore = async (req: Request, res: Response) => {
     staffId,
     address,
     status,
-    maxSeats,
-    currSeats,
     isPopular,
     type,
     description,
@@ -138,7 +131,7 @@ export const updateStore = async (req: Request, res: Response) => {
     rating,
     googleMapLink,
     facebookLink,
-    defaultSlots,
+    defaultSeats,
   } = req.body;
 
   try {
@@ -161,16 +154,14 @@ export const updateStore = async (req: Request, res: Response) => {
            staff_id = $6, 
            address = $7, 
            status = $8, 
-           max_seats = $9, 
-           curr_seats = $10, 
-           is_popular = $11, 
-           type = $12, 
-           image_url = $13, 
-           rating = $14, 
-           facebook_link = $15, 
-           google_map_link = $16, 
-           default_slots = $17
-       WHERE store_id = $18
+           is_popular = $9, 
+           type = $10, 
+           image_url = $11, 
+           rating = $12, 
+           facebook_link = $13, 
+           google_map_link = $14, 
+           default_seats = $15
+       WHERE store_id = $16
        RETURNING *`,
       [
         shopName,
@@ -181,15 +172,13 @@ export const updateStore = async (req: Request, res: Response) => {
         staffId,
         address,
         status,
-        maxSeats,
-        currSeats,
         isPopular,
         type,
         imageUrl,
         rating,
         facebookLink,
         googleMapLink,
-        defaultSlots,
+        defaultSeats,
         storeId,
       ]
     );
@@ -240,96 +229,43 @@ export const deleteStore = async (req: Request, res: Response) => {
   }
 };
 
-// Configure multer for file storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = "uploads/stores/";
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Ensure unique file names
-  },
-});
-
-// Configure multer for multiple file uploads
-const upload = multer({ storage: storage }).array("images", 10); // Allow up to 10 images to be uploaded at once
-
-// Route to upload multiple store images
-export const uploadStoreImages = async (req: Request, res: Response) => {
-  const storeId = req.params.id;
-
-  try {
-    const existingStoreResult = await pool.query(
-      "SELECT * FROM stores WHERE store_id = $1",
-      [storeId]
-    );
-
-    if (existingStoreResult.rows.length === 0) {
-      return res.status(404).json({ message: "Store not found" });
-    }
-
-    // Handling multiple file uploads using multer
-    upload(req, res, async function (err) {
-      if (err) {
-        console.error("Multer error:", err.message);
-        return res.status(500).json({ error: "Error uploading images" });
-      }
-
-      if (!req.files || !(req.files as multer.File[]).length) {
-        return res.status(400).json({ error: "No files uploaded" });
-      }
-
-      // Collect the file paths of the uploaded images
-      const imageUrls = (req.files as multer.File[]).map(
-        (file) => `/uploads/stores/${file.filename}`
-      );
-
-      // Insert multiple image URLs into the database
-      try {
-        const insertImagePromises = imageUrls.map((imageUrl) => {
-          return pool.query(
-            "INSERT INTO store_images (store_id, image_url) VALUES ($1, $2) RETURNING *",
-            [storeId, imageUrl]
-          );
-        });
-
-        const imageResults = await Promise.all(insertImagePromises);
-        res.json({
-          store: existingStoreResult.rows[0],
-          images: imageResults.map((result) => result.rows[0]),
-        });
-      } catch (dbError) {
-        console.error("Database error:", dbError.message); // Log database errors
-        res.status(500).json({ error: "Error saving image URLs" });
-      }
-    });
-  } catch (err) {
-    console.error("Error in uploadStoreImages function:", err.message);
-    res.status(500).json({ error: "Server error" });
-  }
-};
-
 export const addStoreImage = async (req: Request, res: Response) => {
   const { storeId, images } = req.body;
 
   if (!storeId || !Array.isArray(images) || images.length === 0) {
     return res.status(400).json({ error: "Invalid input data" });
   }
+
+  const validImages = images.every(
+    (image: { original: string; thumbnail: string }) => {
+      return (
+        typeof image.original === "string" &&
+        typeof image.thumbnail === "string"
+      );
+    }
+  );
+
+  if (!validImages) {
+    return res.status(400).json({ error: "Invalid image URLs" });
+  }
+
+  const imageRecords = images.map(
+    (image: { original: string; thumbnail: string }) => ({
+      storeId,
+      original: image.original,
+      thumbnail: image.thumbnail,
+    })
+  );
+
   try {
-    const imageRecords = images.map(
-      (image: { original: string; thumbnail: string }) => ({
-        storeId,
-        original: image.original,
-        thumbnail: image.thumbnail,
-      })
-    );
     await db.insert(storeImages).values(imageRecords);
     res.status(201).json({ message: "Images added successfully" });
   } catch (error) {
     console.error("Error adding images:", error);
+    // Handle database errors explicitly (e.g., unique constraint violations)
+    if (error.code === "23505") {
+      return res.status(409).json({ error: "Duplicate images detected" });
+    }
     res
       .status(500)
       .json({ error: "An error occurred while adding the images" });
@@ -444,142 +380,323 @@ export const deleteStoreStaff = async (req: Request, res: Response) => {
   }
 };
 
-// Store Availability Controller
+// Convert import.meta.url to __dirname
+const __filename = fileURLToPath(import.meta.url);
+export const __dirname = path.dirname(__filename);
 
-// Create Store Availability
-export const createStoreAvailability = async (req, res) => {
+// Directories for storing uploaded images and thumbnails
+const uploadsDir = path.join(__dirname, "uploads/stores/");
+const thumbnailsDir = path.join(uploadsDir, "thumbnails/");
+
+// Ensure the directories exist
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+if (!fs.existsSync(thumbnailsDir)) {
+  fs.mkdirSync(thumbnailsDir, { recursive: true });
+}
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filenames
+  },
+});
+
+// Configure multer for multiple file uploads (up to 10 images)
+const upload = multer({ storage: storage }).array("images", 10);
+
+// Image upload controller
+export const uploadStoreImages = async (req: Request, res: Response) => {
+  const storeId = req.params.id;
+
   try {
-    const { storeId, date, availableSlots } = req.body;
+    // Check if the store exists
+    const existingStoreResult = await pool.query(
+      "SELECT * FROM stores WHERE store_id = $1",
+      [storeId]
+    );
 
-    const result = await db.insert(storeAvailability).values({
-      storeId,
-      date,
-      availableSlots,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    if (existingStoreResult.rows.length === 0) {
+      return res.status(404).json({ message: "Store not found" });
+    }
+
+    // Handle file uploads
+    upload(req, res, async (err: any) => {
+      if (err instanceof multer.MulterError) {
+        return res
+          .status(500)
+          .json({ error: "Multer upload error: " + err.message });
+      } else if (err) {
+        return res
+          .status(500)
+          .json({ error: "File upload error: " + err.message });
+      }
+
+      if (!req.files || !(req.files as Express.Multer.File[]).length) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
+
+      const files = req.files as Express.Multer.File[];
+
+      // Process each uploaded file
+      const imagePromises = files.map(async (file) => {
+        const originalImagePath = path.join(uploadsDir, file.filename);
+        const thumbnailImagePath = path.join(
+          thumbnailsDir,
+          `thumb_${file.filename}`
+        );
+
+        try {
+          // Create a thumbnail using sharp
+          await sharp(file.path)
+            .resize({ width: 200 })
+            .toFile(thumbnailImagePath);
+
+          // Return the original and thumbnail paths
+          return { original: originalImagePath, thumbnail: thumbnailImagePath };
+        } catch (sharpError) {
+          console.error("Sharp error:", sharpError.message);
+          return { original: originalImagePath, thumbnail: null }; // Fallback if thumbnail creation fails
+        }
+      });
+
+      try {
+        const images = await Promise.all(imagePromises);
+
+        // Insert image URLs into the database
+        const insertImagePromises = images.map((image) =>
+          pool.query(
+            "INSERT INTO store_images (store_id, original, thumbnail) VALUES ($1, $2, $3) RETURNING *",
+            [storeId, image.original, image.thumbnail]
+          )
+        );
+
+        const imageResults = await Promise.all(insertImagePromises);
+
+        // Send response with the uploaded images and store information
+        return res.json({
+          store: existingStoreResult.rows[0],
+          images: imageResults.map((result) => ({
+            original: `/uploads/stores/${path.basename(
+              result.rows[0].original
+            )}`,
+            thumbnail: result.rows[0].thumbnail
+              ? `/uploads/stores/thumbnails/${path.basename(
+                  result.rows[0].thumbnail
+                )}`
+              : null,
+          })),
+        });
+      } catch (insertError) {
+        console.error("Database insert error:", insertError.message);
+        return res
+          .status(500)
+          .json({ error: "Error saving image URLs to the database" });
+      }
     });
-
-    res.status(201).json({ message: "Store availability created", result });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error creating store availability", error });
+  } catch (err) {
+    console.error("Server error:", err.message);
+    return res.status(500).json({ error: "Server error" });
   }
 };
 
-// Read Store Availability by storeId and date
-
-interface AvailableSlot {
-  time: string;
-  availableSeats: number;
-}
-
-interface Store {
-  defaultSlots: AvailableSlot[];
-}
-
-// Function to get store availability
-export async function getStoreAvailability(
-  storeId: string,
-  date: string
-): Promise<AvailableSlot[]> {
-  const selectedDate = new Date(date);
-  const dayOfWeek = selectedDate.getDay();
+// Store Availability
+export const getStoreAvailability = async (req: Request, res: Response) => {
+  const { storeId } = req.params;
+  const { startDate, endDate } = req.query;
 
   try {
-    // 1. Check if there's custom availability for this specific date
-    const customAvailability = await db
+    const store = await db
+      .select()
+      .from(stores)
+      .where(eq(stores.storeId, storeId))
+      .limit(1);
+    if (!store[0]) {
+      return res.status(404).json({ error: "Store not found" });
+    }
+
+    const availability = await db
       .select()
       .from(storeAvailability)
       .where(
         and(
           eq(storeAvailability.storeId, storeId),
-          eq(storeAvailability.date, selectedDate.toISOString().split("T")[0])
+          sql`${storeAvailability.date} BETWEEN ${startDate} AND ${endDate}`
         )
-      )
-      .execute();
+      );
 
-    if (customAvailability.length) {
-      return customAvailability[0].availableSlots as AvailableSlot[]; // Return custom availability
+    const defaultAvailability = {
+      availableSeats: store[0].defaultSeats,
+      isReservable: true,
+    };
+
+    const result: {
+      date: string;
+      availableSeats: number;
+      isReservable: boolean;
+    }[] = [];
+    let currentDate = new Date(startDate as string);
+    const end = new Date(endDate as string);
+
+    while (currentDate <= end) {
+      const existingAvailability = availability.find(
+        (a) =>
+          new Date(a.date).toISOString().split("T")[0] ===
+          currentDate.toISOString().split("T")[0]
+      );
+
+      result.push({
+        date: currentDate.toISOString().split("T")[0],
+        availableSeats:
+          existingAvailability?.availableSeats ??
+          defaultAvailability.availableSeats,
+        isReservable:
+          existingAvailability?.isReservable ??
+          defaultAvailability.isReservable,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // 2. If no custom availability, fall back to weekly schedule
-    const weeklyAvailability = await db
-      .select()
-      .from(storeWeeklySchedule)
-      .where(
-        and(
-          eq(storeWeeklySchedule.storeId, storeId),
-          eq(storeWeeklySchedule.dayOfWeek, dayOfWeek)
-        )
-      )
-      .execute();
-
-    if (weeklyAvailability.length) {
-      return weeklyAvailability[0].availableSlots as AvailableSlot[]; // Return weekly availability
-    }
-
-    // 3. If no weekly availability, fall back to default slots
-    const store = await db
-      .select()
-      .from(stores)
-      .where(eq(stores.storeId, storeId))
-      .execute();
-
-    if (store.length) {
-      return store[0].defaultSlots as AvailableSlot[]; // Return default slots
-    }
-
-    throw new Error("Store availability not found");
+    return res.json(result);
   } catch (error) {
-    throw new Error(`Error fetching store availability: ${error.message}`);
-  }
-}
-
-// Update Store Availability
-export const updateStoreAvailability = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { availableSlots } = req.body;
-
-    const result = await db
-      .update(storeAvailability)
-      .set({ availableSlots, updatedAt: new Date() })
-      .where(eq(storeAvailability.id, id))
-      .execute();
-
-    if (result.length === 0) {
-      return res.status(404).json({ message: "Availability not found" });
-    }
-
-    res.json({ message: "Store availability updated", result });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error updating store availability",
-      error: error.message,
-    });
+    console.error("Error fetching availability:", error);
+    return res.status(500).json({ error: "Failed to fetch availability" });
   }
 };
 
-// Delete Store Availability
-export const deleteStoreAvailability = async (req, res) => {
+export const createStoreAvailability = async (req: Request, res: Response) => {
+  const { storeId } = req.params;
+  const { date, availableSeats, isReservable } = req.body;
+
   try {
-    const { id } = req.params;
+    // Ensure the date is in a valid format
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ error: "Invalid date format" });
+    }
+    const formattedDate = format(parsedDate, "yyyy-MM-dd");
 
-    const result = await db
-      .delete(storeAvailability)
-      .where(eq(storeAvailability.id, id))
-      .execute();
+    // Step 1: Check if an availability already exists for the storeId and date
+    const existingAvailability = await db
+      .select()
+      .from(storeAvailability)
+      .where(
+        and(
+          eq(storeAvailability.storeId, storeId),
+          eq(storeAvailability.date, formattedDate)
+        )
+      );
 
-    if (result.length === 0) {
-      return res.status(404).json({ message: "Availability not found" });
+    if (existingAvailability.length > 0) {
+      // Step 2: If an availability exists, delete the old entry
+      await db
+        .delete(storeAvailability)
+        .where(
+          and(
+            eq(storeAvailability.storeId, storeId),
+            eq(storeAvailability.date, formattedDate)
+          )
+        );
     }
 
-    res.json({ message: "Store availability deleted" });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error deleting store availability",
-      error: error.message,
+    // Step 3: Insert the new availability data
+    const result = await db
+      .insert(storeAvailability)
+      .values({
+        storeId,
+        date: formattedDate,
+        availableSeats,
+        isReservable,
+      })
+      .returning();
+
+    res.status(201).json({
+      message: "Availability created or replaced",
+      availability: result[0],
     });
+  } catch (error) {
+    console.error("Error creating or updating availability:", error);
+    res.status(500).json({ error: "Failed to create or update availability" });
+  }
+};
+
+export const createBooking = async (req: Request, res: Response) => {
+  const { storeId } = req.params;
+  const { userId, date, seats } = req.body;
+
+  try {
+    const availability = await db
+      .select()
+      .from(storeAvailability)
+      .where(
+        and(
+          eq(storeAvailability.storeId, storeId),
+          eq(storeAvailability.date, new Date(date).toISOString().split("T")[0])
+        )
+      )
+      .limit(1);
+
+    let availableSeats;
+
+    if (availability.length > 0) {
+      availableSeats = availability[0].availableSeats;
+    } else {
+      const store = await db
+        .select()
+        .from(stores)
+        .where(eq(stores.storeId, storeId))
+        .limit(1);
+      if (!store[0]) {
+        return res.status(404).json({ error: "Store not found" });
+      }
+      availableSeats = store[0].defaultSeats;
+    }
+
+    if (seats > availableSeats) {
+      return res.status(400).json({ error: "Not enough seats available" });
+    }
+
+    const booking = await db
+      .insert(bookings)
+      .values({
+        storeId,
+        userId,
+        date: new Date(date).toISOString().split("T")[0],
+        seats,
+      })
+      .returning();
+
+    // Update availability
+    if (availability.length > 0) {
+      await db
+        .update(storeAvailability)
+        .set({ availableSeats: availableSeats - seats })
+        .where(
+          and(
+            eq(storeAvailability.storeId, storeId),
+            eq(
+              storeAvailability.date,
+              new Date(date).toISOString().split("T")[0]
+            )
+          )
+        );
+    } else {
+      await db.insert(storeAvailability).values({
+        storeId,
+        date: new Date(date).toISOString().split("T")[0],
+        availableSeats: availableSeats - seats,
+        isReservable: true,
+      });
+    }
+
+    res.status(201).json(booking[0]);
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    res.status(500).json({ error: "Failed to create booking" });
   }
 };
