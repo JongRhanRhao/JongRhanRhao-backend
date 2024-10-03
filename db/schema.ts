@@ -5,10 +5,8 @@ import {
   varchar,
   integer,
   date,
-  time,
   timestamp,
   boolean,
-  jsonb,
   serial,
 } from "drizzle-orm/pg-core";
 
@@ -70,15 +68,13 @@ export const stores = pgTable("stores", {
   cancelReserve: varchar("cancel_reserve", { length: 255 }).notNull(),
   address: varchar("address", { length: 255 }),
   status: varchar("status", { length: 50 }).notNull(),
-  defaultSlots: jsonb("default_slots"),
-  maxSeats: integer("max_seats").notNull(),
-  currSeats: integer("curr_seats").notNull(),
   isPopular: boolean("is_popular").default(false),
   type: varchar("type", { length: 50 }).array(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   facebookLink: varchar("facebook_link", { length: 255 }),
   googleMapLink: varchar("google_map_link", { length: 255 }),
+  defaultSeats: integer("default_seats").default(50).notNull(),
 });
 
 export const storeAvailability = pgTable("store_availability", {
@@ -87,18 +83,13 @@ export const storeAvailability = pgTable("store_availability", {
     .references(() => stores.storeId)
     .notNull(),
   date: date("date").notNull(),
-  availableSlots: jsonb("available_slots").notNull(),
+  availableSeats: integer("available_seats").notNull(),
+  isReservable: boolean("is_reservable").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const storeWeeklySchedule = pgTable("store_weekly_schedule", {
-  id: serial("id").primaryKey(),
-  storeId: varchar("store_id")
-    .references(() => stores.storeId)
-    .notNull(),
-  dayOfWeek: integer("day_of_week").notNull(),
-  availableSlots: jsonb("available_slots").notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+    .$onUpdateFn(() => sql`now()`),
 });
 
 // Reviews Table (expanded for comments and likes)
