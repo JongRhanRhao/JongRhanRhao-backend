@@ -13,8 +13,6 @@ import {
   deleteStoreStaff,
   getStoreAvailability,
   createStoreAvailability,
-  updateStoreAvailability,
-  deleteStoreAvailability,
 } from "../controller/storeController";
 import {
   getAllFavorites,
@@ -34,6 +32,7 @@ import {
   getReservationByCustomerId,
   getReservationByShopId,
   updateReservationStatus,
+  getReservationByShopIdAndDate,
 } from "../controller/reservationController";
 import {
   createReview,
@@ -57,20 +56,9 @@ router.get("/stores/:id/images", getStoreImages);
 router.get("/stores/:id/staff", getStoreStaff);
 router.delete("/stores/:id/staff", deleteStoreStaff);
 
-// Store Availibility routes
-router.get("/stores/available/:storeId/:date", async (req, res) => {
-  const { storeId, date } = req.params;
-
-  try {
-    const availability = await getStoreAvailability(storeId, date);
-    res.json(availability);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-router.post("/stores/available", createStoreAvailability);
-router.put("/stores/available/:id", updateStoreAvailability);
-router.delete("/stores/available/:id", deleteStoreAvailability);
+// Store Availability
+router.get("/stores/:storeId/availability", getStoreAvailability);
+router.post("/stores/:storeId/availability", createStoreAvailability);
 
 // Favorite routes
 router.get("/favorites", getAllFavorites);
@@ -86,6 +74,7 @@ router.get("/reservations", getAllReservations);
 router.get("/reservations/:id", getReservationById);
 router.get("/reservations/customer/:id", getReservationByCustomerId);
 router.get("/reservations/store/:id", getReservationByShopId);
+router.get("/reservations/:shopId/:reservationDate", getReservationByShopIdAndDate);
 router.post("/reservations", createReservation);
 router.put("/reservations/:id", updateReservation);
 router.put("/reservations/status/:id", updateReservationStatus);
