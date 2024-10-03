@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import pool from "../config/db";
+import { reservations, users } from "../../db/schema";
+import { and, eq } from "drizzle-orm";
+import { dbClient as db } from "../../db/client";
 
 // Get all reservations
 export const getAllReservations = async (req: Request, res: Response) => {
@@ -93,6 +96,42 @@ export const getReservationByShopId = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Error fetching reservation:", err);
     res.status(500).json({ error: err.message });
+  }
+};
+
+export const getReservationByShopIdAndDate = async (
+  req: Request,
+  res: Response
+) => {
+  const shopId = req.params.shopId;
+  const reservationDate = req.params.reservationDate;
+
+  if (!shopId || !reservationDate) {
+    return res
+      .status(400)
+      .json({ error: "Shop ID and reservation date are required." });
+  }
+
+  try {
+    const result = await db
+      .select()
+      .from(reservations)
+      .innerJoin(users, eq(reservations.customerId, users.userId))
+      .where(
+        and(
+          eq(reservations.shopId, shopId),
+          eq(reservations.reservationDate, reservationDate)
+        )
+      );
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Error fetching reservation:", err);
+    res.status(500).json({ error: "Failed to fetch reservation" });
   }
 };
 
