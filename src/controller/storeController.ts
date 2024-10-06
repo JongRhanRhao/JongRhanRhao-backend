@@ -44,7 +44,11 @@ export const getStoreById = async (req: Request, res: Response) => {
 
 // create a store
 const generateStoreId = (shopName: string): string => {
-  return shopName.trim().toUpperCase().replace(/\s+/g, "-");
+  return shopName
+    .trim()
+    .toUpperCase()
+    .replace(/[^a-zA-Z\s]/g, "")
+    .replace(/\s+/g, "-");
 };
 
 export const createStore = async (req: Request, res: Response) => {
