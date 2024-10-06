@@ -10,11 +10,11 @@ import {
   serial,
 } from "drizzle-orm/pg-core";
 
+import { nanoid } from "nanoid";
+
 // Users Table
 export const users = pgTable("users", {
-  userId: varchar("user_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  userId: varchar("user_id", nanoid(21)).notNull().primaryKey(),
   userName: varchar("user_name", { length: 255 }).notNull(),
   userEmail: varchar("user_email", { length: 255 }).notNull(),
   password: varchar("password", { length: 255 }),
@@ -30,17 +30,13 @@ export const users = pgTable("users", {
 
 // Roles Table
 export const roles = pgTable("roles", {
-  roleId: varchar("role_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  roleId: varchar("role_id").default(nanoid(21)).primaryKey(),
   roleName: varchar("role_name", { length: 50 }).notNull(),
 });
 
 // UserRoles Table (many-to-many relationship between Users and Roles)
 export const userRoles = pgTable("userroles", {
-  userRoleId: varchar("userrole_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  userRoleId: varchar("userrole_id").default(nanoid(21)).primaryKey(),
   userId: varchar("user_id")
     .references(() => users.userId)
     .notNull(),
@@ -94,9 +90,7 @@ export const storeAvailability = pgTable("store_availability", {
 
 // Reviews Table (expanded for comments and likes)
 export const reviewsTable = pgTable("reviews", {
-  reviewId: varchar("review_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  reviewId: varchar("review_id").default(nanoid(21)).primaryKey(),
   shopId: varchar("shop_id")
     .references(() => stores.storeId)
     .notNull(),
@@ -111,9 +105,7 @@ export const reviewsTable = pgTable("reviews", {
 
 // StoreImages Table
 export const storeImages = pgTable("store_images", {
-  imageId: varchar("image_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  imageId: varchar("image_id").default(nanoid(21)).primaryKey(),
   storeId: varchar("store_id")
     .notNull()
     .references(() => stores.storeId),
@@ -123,9 +115,7 @@ export const storeImages = pgTable("store_images", {
 
 // UserProfileImages Table
 export const userProfileImages = pgTable("user_profile_picture", {
-  imageId: varchar("image_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  imageId: varchar("image_id").default(nanoid(21)).primaryKey(),
   userId: varchar("user_id")
     .notNull()
     .references(() => users.userId),
@@ -135,9 +125,7 @@ export const userProfileImages = pgTable("user_profile_picture", {
 
 // Staff Table
 export const staff = pgTable("staff", {
-  staffId: varchar("staff_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  staffId: varchar("staff_id").default(nanoid(21)).primaryKey(),
   shopId: varchar("shop_id")
     .references(() => stores.storeId)
     .notNull(),
@@ -165,9 +153,7 @@ export const reservations = pgTable("reservations", {
 
 // Favorites Table
 export const favorites = pgTable("favorites", {
-  favoriteId: varchar("favorite_id")
-    .default(sql`generate_nanoid()`)
-    .primaryKey(),
+  favoriteId: varchar("favorite_id").default(nanoid(21)).primaryKey(),
   customerId: varchar("customer_id")
     .references(() => users.userId)
     .notNull(),
