@@ -1,5 +1,5 @@
 import { createServer } from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { app } from "./app";
 import dotenv from "dotenv";
 
@@ -14,13 +14,13 @@ export const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  socket.on("store_update", (data) => {
+io.on("connection", (socket: Socket) => {
+  socket.on("store_update", (data: { storeId: string }) => {
     console.log(`Store updated: ${data.storeId}`);
     io.emit("store_update", { storeId: data.storeId });
   });
 
-  socket.on("reservation_update", (data) => {
+  socket.on("reservation_update", (data: { reservationId: string }) => {
     console.log(`Reservation updated: ${data.reservationId}`);
     io.emit("reservation_update", { reservationId: data.reservationId });
   });
