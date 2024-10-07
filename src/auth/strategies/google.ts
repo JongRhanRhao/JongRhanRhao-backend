@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { dbClient } from "../../../db/client";
 import { users } from "../../../db/schema";
 import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ export const googleStrat = new GoogleStrategy(
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/users/auth/google/callback`,
   },
-  async function (accessToken, refreshToken, profile: any, cb: any) {
+  async function (profile: any, cb: any) {
     try {
       const existingUser = await dbClient
         .select()
@@ -31,6 +32,7 @@ export const googleStrat = new GoogleStrategy(
       const newUser = await dbClient
         .insert(users)
         .values({
+          userId: nanoid(21),
           userName: profile.displayName,
           userEmail: profile.emails[0].value,
           googleId: profile.id,
