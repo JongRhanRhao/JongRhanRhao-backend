@@ -1,10 +1,12 @@
 import { eq, or } from "drizzle-orm";
-import { users } from "../../db/schema";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import express from "express";
 import { Request, Response } from "express";
+import { nanoid } from "nanoid";
+
+import { users } from "../../db/schema";
 import { dbClient } from "../../db/client";
 
 dotenv.config();
@@ -30,6 +32,7 @@ export const register = async (req: Request, res: Response) => {
     const [newUser] = await dbClient
       .insert(users)
       .values({
+        userId: nanoid(21),
         userName: user_name,
         userEmail: email,
         password: hashedPassword,
