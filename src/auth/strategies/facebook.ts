@@ -2,6 +2,7 @@ import { Strategy as FacebookStrategy } from "passport-facebook";
 import { eq } from "drizzle-orm";
 import { users } from "../../../db/schema";
 import { dbClient } from "../../../db/client";
+import { nanoid } from "nanoid";
 
 if (!process.env.FACEBOOK_CLIENT_ID || !process.env.FACEBOOK_CLIENT_SECRET) {
   throw new Error("Missing Facebook OAuth environment variables");
@@ -28,10 +29,12 @@ export const facebookStrat = new FacebookStrategy(
         const newUser = await dbClient
           .insert(users)
           .values({
+            userId: nanoid(21),
             facebookId: profile.id,
             userEmail: profile.emails?.[0]?.value || null,
             userName: profile.displayName,
-            phoneNumber: profile.phone, // Set to null since phone isn't available by default
+            phoneNumber: profile.phone,
+            birthYear: 0,
             role: "user",
           })
           .returning();
