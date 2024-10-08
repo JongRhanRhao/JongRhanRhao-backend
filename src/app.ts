@@ -5,7 +5,7 @@ import "./auth/passport.js";
 
 import { NODE_ENV } from "./utils/env.js";
 import auth from "./routes/auth.js";
-import jong from "./routes/management.js";
+import management from "./routes/management.js";
 import user from "./routes/user.js";
 import setupMiddlewares from "./auth/middleware.js";
 import { sessionInstance } from "./auth/session.js";
@@ -26,7 +26,7 @@ app.use(passport.session());
 // Routes
 app.use("/users/auth", auth);
 app.use("/users", user);
-app.use("/stores/api", jong);
+app.use("/stores/api", management);
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req: Request, res: Response) => {
