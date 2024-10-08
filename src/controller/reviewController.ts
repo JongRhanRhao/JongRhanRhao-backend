@@ -1,8 +1,9 @@
+import { Request, Response } from "express";
 import { eq } from "drizzle-orm";
-import { dbClient as db } from "../../db/client";
-import { reviewsTable, users } from "../../db/schema";
+import { dbClient as db } from "../../db/client.js";
+import { reviewsTable, users } from "../../db/schema.js";
 
-export const createReview = async (req, res) => {
+export const createReview = async (req: Request, res: Response) => {
   const { shopId, customerId, rating, reviewText, avatarUrl } = req.body;
 
   try {
@@ -36,11 +37,14 @@ export const createReview = async (req, res) => {
 
     res.status(201).json(reviewWithCustomerName);
   } catch (error) {
-    res.status(500).json({ message: "Error creating review", error });
+    const err = error as Error;
+    res
+      .status(500)
+      .json({ message: "Error creating review", error: err.message });
   }
 };
 
-export const getReviewsByShop = async (req, res) => {
+export const getReviewsByShop = async (req: Request, res: Response) => {
   const { shopId } = req.params;
 
   try {
@@ -61,11 +65,14 @@ export const getReviewsByShop = async (req, res) => {
 
     res.status(200).json(reviews);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching reviews", error });
+    const err = error as Error;
+    res
+      .status(500)
+      .json({ message: "Error fetching reviews", error: err.message });
   }
 };
 
-export const updateReview = async (req, res) => {
+export const updateReview = async (req: Request, res: Response) => {
   const { reviewId } = req.params;
   const { reviewText, rating, avatarUrl } = req.body;
 
@@ -82,17 +89,23 @@ export const updateReview = async (req, res) => {
 
     res.status(200).json(updatedReview);
   } catch (error) {
-    res.status(500).json({ message: "Error updating review", error });
+    const err = error as Error;
+    res
+      .status(500)
+      .json({ message: "Error updating review", error: err.message });
   }
 };
 
-export const deleteReview = async (req, res) => {
+export const deleteReview = async (req: Request, res: Response) => {
   const { reviewId } = req.params;
 
   try {
     await db.delete(reviewsTable).where(eq(reviewsTable.reviewId, reviewId));
     res.status(204).json({ message: "Review deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting review", error });
+    const err = error as Error;
+    res
+      .status(500)
+      .json({ message: "Error deleting review", error: err.message });
   }
 };

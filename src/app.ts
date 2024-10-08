@@ -1,20 +1,18 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import passport from "passport";
-import "./auth/passport";
-import path from "path";
+import "./auth/passport.js";
 
-import { NODE_ENV } from "./utils/env";
-import auth from "./routes/auth";
-import jong from "./routes/jong";
-import user from "./routes/user";
-import setupMiddlewares from "./auth/middleware";
-import { __dirname } from "./controller/storeController";
-import { sessionInstance } from "./auth/session";
+import { NODE_ENV } from "./utils/env.js";
+import auth from "./routes/auth.js";
+import jong from "./routes/jong.js";
+import user from "./routes/user.js";
+import setupMiddlewares from "./auth/middleware.js";
+import { sessionInstance } from "./auth/session.js";
 
 dotenv.config();
 
-export const app = express();
+const app = express();
 
 setupMiddlewares(app);
 
@@ -29,9 +27,10 @@ app.use(passport.session());
 app.use("/users/auth", auth);
 app.use("/users", user);
 app.use("/stores/api", jong);
-app.use("/stores/images", express.static(path.join(__dirname, "uploads")));
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "JongRhanRhao backend is up and running!" });
 });
+
+export default app;

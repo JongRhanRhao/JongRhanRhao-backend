@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import pool from "../config/db";
+import pool from "../config/db.js";
 
 // Get all favorites
 export const getAllFavorites = async (req: Request, res: Response) => {
@@ -8,7 +8,7 @@ export const getAllFavorites = async (req: Request, res: Response) => {
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching favorites:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
@@ -26,11 +26,11 @@ export const getFavoriteById = async (req: Request, res: Response) => {
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("Error fetching favorite:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
-//Get a favorite by customer ID
+// Get a favorite by customer ID
 export const getFavoriteByCustomerId = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
@@ -44,7 +44,7 @@ export const getFavoriteByCustomerId = async (req: Request, res: Response) => {
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching favorite:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
@@ -70,7 +70,7 @@ export const createFavorite = async (req: Request, res: Response) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error("Error creating favorite:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
@@ -91,7 +91,7 @@ export const getFavoriteStatus = async (req: Request, res: Response) => {
     }
   } catch (err) {
     console.error("Error checking favorite status:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
@@ -110,7 +110,7 @@ export const updateFavorite = async (req: Request, res: Response) => {
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("Error updating favorite:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
@@ -130,6 +130,6 @@ export const deleteFavorite = async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (err) {
     console.error("Error removing favorite:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: (err as Error).message });
   }
 };

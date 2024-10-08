@@ -2,15 +2,13 @@ import { eq, or } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import express from "express";
 import { Request, Response } from "express";
 import { nanoid } from "nanoid";
 
-import { users } from "../../db/schema";
-import { dbClient } from "../../db/client";
+import { users } from "../../db/schema.js";
+import { dbClient } from "../../db/client.js";
 
 dotenv.config();
-const router = express.Router();
 
 export const register = async (req: Request, res: Response) => {
   const { user_name, email, password, role, phone_number, birthYear } =

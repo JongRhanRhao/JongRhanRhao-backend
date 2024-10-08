@@ -1,15 +1,15 @@
 import { Request, Response } from "express";
 import { eq, inArray, and, sql } from "drizzle-orm";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
-import sharp from "sharp";
-import { fileURLToPath } from "url";
 import { format } from "date-fns";
 
-import pool from "../config/db";
-import { dbClient as db } from "../../db/client";
-import { storeAvailability, storeImages, stores, users } from "../../db/schema";
+import pool from "../config/db.js";
+import { dbClient as db } from "../../db/client.js";
+import {
+  storeAvailability,
+  storeImages,
+  stores,
+  users,
+} from "../../db/schema.js";
 
 // Get all stores
 export const getAllStores = async (req: Request, res: Response) => {
@@ -112,8 +112,8 @@ export const createStore = async (req: Request, res: Response) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("Error creating store:", err.message);
-    res.status(500).json({ error: err.message });
+    console.error("Error creating store:", (err as Error).message);
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
@@ -188,8 +188,8 @@ export const updateStore = async (req: Request, res: Response) => {
     );
     res.json(updatedStoreResult.rows[0]);
   } catch (err) {
-    console.error("Error updating store:", err.message);
-    res.status(500).json({ error: err.message });
+    console.error("Error updating store:", (err as Error).message);
+    res.status(500).json({ error: (err as Error).message });
   }
 };
 
@@ -206,7 +206,7 @@ export const getUserStores = async (req: Request, res: Response) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.error("Error fetching user's stores:", err);
+    console.error("Error fetching user's stores:", (err as Error).message);
     res.status(500).json({ error: (err as Error).message });
   }
 };
@@ -228,7 +228,7 @@ export const deleteStore = async (req: Request, res: Response) => {
     await pool.query("DELETE FROM stores WHERE store_id = $1", [storeId]);
     res.status(204).send({ message: "Store deleted" });
   } catch (err) {
-    console.error("Error deleting store:", err);
+    console.error("Error deleting store:", (err as Error).message);
     res.status(500).json({ error: (err as Error).message });
   }
 };
@@ -265,9 +265,9 @@ export const addStoreImage = async (req: Request, res: Response) => {
     await db.insert(storeImages).values(imageRecords);
     res.status(201).json({ message: "Images added successfully" });
   } catch (error) {
-    console.error("Error adding images:", error);
+    console.error("Error adding images:", (error as Error).message);
     // Handle database errors explicitly (e.g., unique constraint violations)
-    if (error.code === "23505") {
+    if ((error as any).code === "23505") {
       return res.status(409).json({ error: "Duplicate images detected" });
     }
     res
@@ -297,7 +297,7 @@ export const getStoreImages = async (req: Request, res: Response) => {
 
     res.json(images);
   } catch (error) {
-    console.error("Error fetching store images:", error);
+    console.error("Error fetching store images:", (error as Error).message);
     res
       .status(500)
       .json({ error: "An error occurred while fetching the images" });
@@ -336,7 +336,7 @@ export const getStoreStaff = async (req: Request, res: Response) => {
 
     res.json(staff);
   } catch (error) {
-    console.error("Error fetching store staff:", error);
+    console.error("Error fetching store staff:", (error as Error).message);
     res
       .status(500)
       .json({ error: "An error occurred while fetching the store staff" });
@@ -377,134 +377,10 @@ export const deleteStoreStaff = async (req: Request, res: Response) => {
 
     res.json({ message: "Staff removed successfully" });
   } catch (error) {
-    console.error("Error removing staff:", error);
+    console.error("Error removing staff:", (error as Error).message);
     res
       .status(500)
       .json({ error: "An error occurred while removing the staff" });
-  }
-};
-
-// Convert import.meta.url to __dirname
-const __filename = fileURLToPath(import.meta.url);
-export const __dirname = path.dirname(__filename);
-
-// Directories for storing uploaded images and thumbnails
-const uploadsDir = path.join(__dirname, "uploads/stores/");
-const thumbnailsDir = path.join(uploadsDir, "thumbnails/");
-
-// Ensure the directories exist
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-if (!fs.existsSync(thumbnailsDir)) {
-  fs.mkdirSync(thumbnailsDir, { recursive: true });
-}
-
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filenames
-  },
-});
-
-// Configure multer for multiple file uploads (up to 10 images)
-const upload = multer({ storage: storage }).array("images", 10);
-
-// Image upload controller
-export const uploadStoreImages = async (req: Request, res: Response) => {
-  const storeId = req.params.id;
-
-  try {
-    // Check if the store exists
-    const existingStoreResult = await pool.query(
-      "SELECT * FROM stores WHERE store_id = $1",
-      [storeId]
-    );
-
-    if (existingStoreResult.rows.length === 0) {
-      return res.status(404).json({ message: "Store not found" });
-    }
-
-    // Handle file uploads
-    upload(req, res, async (err: any) => {
-      if (err instanceof multer.MulterError) {
-        return res
-          .status(500)
-          .json({ error: "Multer upload error: " + err.message });
-      } else if (err) {
-        return res
-          .status(500)
-          .json({ error: "File upload error: " + err.message });
-      }
-
-      if (!req.files || !(req.files as Express.Multer.File[]).length) {
-        return res.status(400).json({ error: "No files uploaded" });
-      }
-
-      const files = req.files as Express.Multer.File[];
-
-      // Process each uploaded file
-      const imagePromises = files.map(async (file) => {
-        const originalImagePath = path.join(uploadsDir, file.filename);
-        const thumbnailImagePath = path.join(
-          thumbnailsDir,
-          `thumb_${file.filename}`
-        );
-
-        try {
-          // Create a thumbnail using sharp
-          await sharp(file.path)
-            .resize({ width: 200 })
-            .toFile(thumbnailImagePath);
-
-          // Return the original and thumbnail paths
-          return { original: originalImagePath, thumbnail: thumbnailImagePath };
-        } catch (sharpError) {
-          console.error("Sharp error:", sharpError.message);
-          return { original: originalImagePath, thumbnail: null }; // Fallback if thumbnail creation fails
-        }
-      });
-
-      try {
-        const images = await Promise.all(imagePromises);
-
-        // Insert image URLs into the database
-        const insertImagePromises = images.map((image) =>
-          pool.query(
-            "INSERT INTO store_images (store_id, original, thumbnail) VALUES ($1, $2, $3) RETURNING *",
-            [storeId, image.original, image.thumbnail]
-          )
-        );
-
-        const imageResults = await Promise.all(insertImagePromises);
-
-        // Send response with the uploaded images and store information
-        return res.json({
-          store: existingStoreResult.rows[0],
-          images: imageResults.map((result) => ({
-            original: `/uploads/stores/${path.basename(
-              result.rows[0].original
-            )}`,
-            thumbnail: result.rows[0].thumbnail
-              ? `/uploads/stores/thumbnails/${path.basename(
-                  result.rows[0].thumbnail
-                )}`
-              : null,
-          })),
-        });
-      } catch (insertError) {
-        console.error("Database insert error:", insertError.message);
-        return res
-          .status(500)
-          .json({ error: "Error saving image URLs to the database" });
-      }
-    });
-  } catch (err) {
-    console.error("Server error:", err.message);
-    return res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -626,81 +502,5 @@ export const createStoreAvailability = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error creating or updating availability:", error);
     res.status(500).json({ error: "Failed to create or update availability" });
-  }
-};
-
-export const createBooking = async (req: Request, res: Response) => {
-  const { storeId } = req.params;
-  const { userId, date, seats } = req.body;
-
-  try {
-    const availability = await db
-      .select()
-      .from(storeAvailability)
-      .where(
-        and(
-          eq(storeAvailability.storeId, storeId),
-          eq(storeAvailability.date, new Date(date).toISOString().split("T")[0])
-        )
-      )
-      .limit(1);
-
-    let availableSeats;
-
-    if (availability.length > 0) {
-      availableSeats = availability[0].availableSeats;
-    } else {
-      const store = await db
-        .select()
-        .from(stores)
-        .where(eq(stores.storeId, storeId))
-        .limit(1);
-      if (!store[0]) {
-        return res.status(404).json({ error: "Store not found" });
-      }
-      availableSeats = store[0].defaultSeats;
-    }
-
-    if (seats > availableSeats) {
-      return res.status(400).json({ error: "Not enough seats available" });
-    }
-
-    const booking = await db
-      .insert(bookings)
-      .values({
-        storeId,
-        userId,
-        date: new Date(date).toISOString().split("T")[0],
-        seats,
-      })
-      .returning();
-
-    // Update availability
-    if (availability.length > 0) {
-      await db
-        .update(storeAvailability)
-        .set({ availableSeats: availableSeats - seats })
-        .where(
-          and(
-            eq(storeAvailability.storeId, storeId),
-            eq(
-              storeAvailability.date,
-              new Date(date).toISOString().split("T")[0]
-            )
-          )
-        );
-    } else {
-      await db.insert(storeAvailability).values({
-        storeId,
-        date: new Date(date).toISOString().split("T")[0],
-        availableSeats: availableSeats - seats,
-        isReservable: true,
-      });
-    }
-
-    res.status(201).json(booking[0]);
-  } catch (error) {
-    console.error("Error creating booking:", error);
-    res.status(500).json({ error: "Failed to create booking" });
   }
 };

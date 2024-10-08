@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
-import { connectionString } from "@db/utils";
+import { connectionString } from "../db/utils";
 
 const dbConn = postgres(connectionString, { max: 1 });
 

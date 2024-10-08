@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import pool from "../config/db";
-import { reservations, users } from "../../db/schema";
 import { and, eq } from "drizzle-orm";
-import { dbClient as db } from "../../db/client";
+import pool from "../config/db.js";
+import { reservations, users } from "../../db/schema.js";
+import { dbClient as db } from "../../db/client.js";
 
 // Get all reservations
 export const getAllReservations = async (req: Request, res: Response) => {
@@ -11,7 +11,11 @@ export const getAllReservations = async (req: Request, res: Response) => {
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching reservations:", err);
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };
 
@@ -29,7 +33,11 @@ export const getReservationById = async (req: Request, res: Response) => {
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("Error fetching reservation:", err);
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };
 
@@ -63,7 +71,11 @@ export const getReservationByCustomerId = async (
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching reservation:", err);
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };
 
@@ -95,7 +107,11 @@ export const getReservationByShopId = async (req: Request, res: Response) => {
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching reservation:", err);
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };
 
@@ -131,7 +147,11 @@ export const getReservationByShopIdAndDate = async (
     res.status(200).json(result);
   } catch (err) {
     console.error("Error fetching reservation:", err);
-    res.status(500).json({ error: "Failed to fetch reservation" });
+    if (err instanceof Error) {
+      res.status(500).json({ error: "Failed to fetch reservation" });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };
 
@@ -183,7 +203,11 @@ export const createReservation = async (req: Request, res: Response) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error("Error creating reservation:", err);
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };
 
@@ -209,7 +233,11 @@ export const updateReservation = async (req: Request, res: Response) => {
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("Error updating reservation:", err);
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };
 
@@ -228,7 +256,11 @@ export const updateReservationStatus = async (req: Request, res: Response) => {
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("Error updating reservation status:", err);
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };
 
@@ -249,6 +281,10 @@ export const deleteReservation = async (req: Request, res: Response) => {
     res.status(204).json({ message: "Reservation deleted successfully" });
   } catch (err) {
     console.error("Error deleting reservation:", err);
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error occurred" });
+    }
   }
 };

@@ -1,5 +1,5 @@
 import session from "express-session";
-import { NODE_ENV } from "../utils/env";
+import { NODE_ENV } from "../utils/env.js";
 
 export const sessionInstance = session({
   secret: process.env.SESSION_SECRET || "tanned-catchable-spool",

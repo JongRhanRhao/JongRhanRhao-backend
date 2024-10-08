@@ -2,12 +2,16 @@ import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 
-import { dbClient } from "../../../db/client";
-import { users } from "../../../db/schema";
+import { dbClient } from "../../../db/client.js";
+import { users } from "../../../db/schema.js";
 
 export const localStrat = new LocalStrategy(
   { usernameField: "email" },
-  async (email: string, password: string, done) => {
+  async (
+    email: string,
+    password: string,
+    done: (error: any, user?: any, options?: { message: string }) => void
+  ) => {
     try {
       const result = await dbClient
         .select()

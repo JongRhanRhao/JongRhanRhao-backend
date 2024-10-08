@@ -1,19 +1,25 @@
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import dotenv from "dotenv";
-import { dbClient } from "../../../db/client";
-import { users } from "../../../db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+
+import { dbClient } from "../../../db/client.js";
+import { users } from "../../../db/schema.js";
 
 dotenv.config();
 
 export const googleStrat = new GoogleStrategy(
   {
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    clientID: process.env.GOOGLE_CLIENT_ID || "",
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     callbackURL: `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/users/auth/google/callback`,
   },
-  async function (profile: any, cb: any) {
+  async function (
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: any
+  ) {
     try {
       const existingUser = await dbClient
         .select()
@@ -22,7 +28,7 @@ export const googleStrat = new GoogleStrategy(
         .limit(1);
 
       if (existingUser.length > 0) {
-        return cb(null, existingUser[0]);
+        return done(null, existingUser[0]);
       }
       const profilePicture = profile.photos?.[0]?.value || null;
       const birthYear = profile.birthday
@@ -43,9 +49,9 @@ export const googleStrat = new GoogleStrategy(
         })
         .returning();
 
-      return cb(null, newUser[0]);
+      return done(null, newUser[0]);
     } catch (err) {
-      return cb(err, null);
+      return done(err, null);
     }
   }
 );
