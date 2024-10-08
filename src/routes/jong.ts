@@ -5,7 +5,6 @@ import {
   createStore,
   updateStore,
   deleteStore,
-  uploadStoreImages,
   getUserStores,
   addStoreImage,
   getStoreImages,
@@ -13,7 +12,7 @@ import {
   deleteStoreStaff,
   getStoreAvailability,
   createStoreAvailability,
-} from "../controller/storeController";
+} from "../controller/storeController.js";
 import {
   getAllFavorites,
   getFavoriteById,
@@ -22,7 +21,7 @@ import {
   deleteFavorite,
   getFavoriteByCustomerId,
   getFavoriteStatus,
-} from "../controller/favoriteController";
+} from "../controller/favoriteController.js";
 import {
   getAllReservations,
   getReservationById,
@@ -33,13 +32,13 @@ import {
   getReservationByShopId,
   updateReservationStatus,
   getReservationByShopIdAndDate,
-} from "../controller/reservationController";
+} from "../controller/reservationController.js";
 import {
   createReview,
   deleteReview,
   getReviewsByShop,
   updateReview,
-} from "../controller/reviewController";
+} from "../controller/reviewController.js";
 
 const router = express.Router();
 
@@ -50,7 +49,6 @@ router.get("/stores/user/:userId", getUserStores);
 router.post("/stores", createStore);
 router.put("/stores/:id", updateStore);
 router.delete("/stores/:id", deleteStore);
-router.post("/stores/:id/upload-image", uploadStoreImages);
 router.post("/stores/add-store-images", addStoreImage);
 router.get("/stores/:id/images", getStoreImages);
 router.get("/stores/:id/staff", getStoreStaff);
@@ -74,7 +72,10 @@ router.get("/reservations", getAllReservations);
 router.get("/reservations/:id", getReservationById);
 router.get("/reservations/customer/:id", getReservationByCustomerId);
 router.get("/reservations/store/:id", getReservationByShopId);
-router.get("/reservations/:shopId/:reservationDate", getReservationByShopIdAndDate);
+router.get(
+  "/reservations/:shopId/:reservationDate",
+  getReservationByShopIdAndDate
+);
 router.post("/reservations", createReservation);
 router.put("/reservations/:id", updateReservation);
 router.put("/reservations/status/:id", updateReservationStatus);
