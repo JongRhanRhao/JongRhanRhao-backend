@@ -5,7 +5,7 @@ import "./auth/passport.js";
 
 import { NODE_ENV } from "./utils/env.js";
 import auth from "./routes/auth.js";
-import jong from "./routes/jong.js";
+import jong from "./routes/management.js";
 import user from "./routes/user.js";
 import setupMiddlewares from "./auth/middleware.js";
 import { sessionInstance } from "./auth/session.js";
