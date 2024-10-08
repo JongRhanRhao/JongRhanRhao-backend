@@ -8,6 +8,7 @@ import {
   timestamp,
   boolean,
   serial,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 
 import { nanoid } from "nanoid";
@@ -152,12 +153,20 @@ export const reservations = pgTable("reservations", {
 });
 
 // Favorites Table
-export const favorites = pgTable("favorites", {
-  favoriteId: varchar("favorite_id").default(nanoid(21)).primaryKey(),
-  customerId: varchar("customer_id")
-    .references(() => users.userId)
-    .notNull(),
-  storeId: varchar("store_id")
-    .references(() => stores.storeId)
-    .notNull(),
-});
+export const favorites = pgTable(
+  "favorites",
+  {
+    customerId: varchar("customer_id")
+      .references(() => users.userId)
+      .notNull(),
+    storeId: varchar("store_id")
+      .references(() => stores.storeId)
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => {
+    return {
+      pk: primaryKey(table.customerId, table.storeId),
+    };
+  }
+);
