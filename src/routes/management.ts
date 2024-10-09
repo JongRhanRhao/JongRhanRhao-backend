@@ -12,6 +12,7 @@ import {
   deleteStoreStaff,
   getStoreAvailability,
   createStoreAvailability,
+  getPopularStores,
 } from "../controller/storeController.js";
 import {
   getAllFavorites,
@@ -44,6 +45,7 @@ const router = express.Router();
 
 // Store routes
 router.get("/stores", getAllStores);
+router.get("/stores/popular", getPopularStores);
 router.get("/stores/:id", getStoreById);
 router.get("/stores/user/:userId", getUserStores);
 router.post("/stores", createStore);
@@ -53,8 +55,6 @@ router.post("/stores/add-store-images", addStoreImage);
 router.get("/stores/:id/images", getStoreImages);
 router.get("/stores/:id/staff", getStoreStaff);
 router.delete("/stores/:id/staff", deleteStoreStaff);
-
-// Store Availability
 router.get("/stores/:storeId/availability", getStoreAvailability);
 router.post("/stores/:storeId/availability", createStoreAvailability);
 
