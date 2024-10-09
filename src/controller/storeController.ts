@@ -504,3 +504,31 @@ export const createStoreAvailability = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to create or update availability" });
   }
 };
+
+// Get popular stores based on the number of reservations
+export const getPopularStores = async (req: Request, res: Response) => {
+  try {
+    // Query to get stores sorted by reservation count
+    const result = await pool.query(`
+      SELECT 
+        s.store_id, 
+        s.shop_name, 
+        COUNT(r.reservation_id) AS reservation_count
+      FROM 
+        stores s
+      LEFT JOIN 
+        reservations r 
+      ON 
+        s.store_id = r.shop_id
+      GROUP BY 
+        s.store_id
+      ORDER BY 
+        reservation_count DESC;
+    `);
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching popular stores:", err);
+    res.status(500).json({ error: "Error fetching popular stores" });
+  }
+};
