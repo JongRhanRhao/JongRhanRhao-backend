@@ -101,6 +101,7 @@ export const reviewsTable = pgTable("reviews", {
   rating: integer("rating").notNull(),
   reviewText: varchar("review_text", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
   avatarUrl: varchar("avatar_url", { length: 255 }),
 });
 
@@ -150,6 +151,8 @@ export const reservations = pgTable("reservations", {
   numberOfPeople: integer("number_of_people").notNull(),
   phoneNumber: varchar("phone_number", { length: 15 }),
   note: varchar("note", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Favorites Table
@@ -163,6 +166,7 @@ export const favorites = pgTable(
       .references(() => stores.storeId)
       .notNull(),
     createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
   },
   (table) => {
     return {
