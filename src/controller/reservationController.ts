@@ -21,7 +21,7 @@ export const getAllReservations = async (req: Request, res: Response) => {
 
 // Get a reservation by ID
 export const getReservationById = async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = req.params.id;
   try {
     const result = await pool.query(
       "SELECT * FROM reservations WHERE reservation_id = $1",
