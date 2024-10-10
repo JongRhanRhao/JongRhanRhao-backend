@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
+
 import { dbClient as db } from "../../db/client.js";
 import { reviewsTable, users } from "../../db/schema.js";
 
@@ -19,9 +21,27 @@ export const createReview = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Customer not found" });
     }
 
+    const existingReview = await db
+      .select()
+      .from(reviewsTable)
+      .where(
+        and(
+          eq(reviewsTable.shopId, shopId),
+          eq(reviewsTable.customerId, customerId)
+        )
+      )
+      .limit(1);
+
+    if (existingReview.length) {
+      return res
+        .status(409)
+        .json({ message: "Review already exists for this customer and shop" });
+    }
+
     const newReview = await db
       .insert(reviewsTable)
       .values({
+        reviewId: nanoid(21),
         shopId,
         customerId,
         rating,
