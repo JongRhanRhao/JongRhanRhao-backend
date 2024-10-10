@@ -47,7 +47,7 @@ const generateStoreId = (shopName: string): string => {
   return shopName
     .trim()
     .toUpperCase()
-    .replace(/[^a-zA-Z\s]/g, "")
+    .replace(/[^a-zA-Z0-9\s]/g, "")
     .replace(/\s+/g, "-");
 };
 
@@ -136,6 +136,7 @@ export const updateStore = async (req: Request, res: Response) => {
     googleMapLink,
     facebookLink,
     defaultSeats,
+    ageRange,
   } = req.body;
 
   try {
@@ -164,8 +165,9 @@ export const updateStore = async (req: Request, res: Response) => {
            rating = $12, 
            facebook_link = $13, 
            google_map_link = $14, 
-           default_seats = $15
-       WHERE store_id = $16
+           default_seats = $15,
+           age_range = $16
+       WHERE store_id = $17
        RETURNING *`,
       [
         shopName,
@@ -183,6 +185,7 @@ export const updateStore = async (req: Request, res: Response) => {
         facebookLink,
         googleMapLink,
         defaultSeats,
+        ageRange,
         storeId,
       ]
     );
