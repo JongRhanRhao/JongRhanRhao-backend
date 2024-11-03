@@ -15,8 +15,9 @@ const limiter = rateLimit({
 export default function setupMiddlewares(app: any) {
   app.use(
     cors({
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
+      origin: process.env.CLIENT_URL || "https://g8.fsd.cpe.eng.cmu.ac.th/",
       credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE"],
     })
   );
   // app.use(limiter);
