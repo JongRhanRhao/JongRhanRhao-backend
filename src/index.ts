@@ -9,9 +9,11 @@ const server = createServer(app);
 
 export const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "https://g8.fsd.cpe.eng.cmu.ac.th",
     methods: ["GET", "POST"],
+    credentials: true,
   },
+  path: "/socket.io",
 });
 
 io.on("connection", (socket: Socket) => {
